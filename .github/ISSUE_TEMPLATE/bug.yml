@@ -11,23 +11,11 @@ body:
       required: true
   - type: textarea
     attributes:
-      label: ⚡ 재현 방법
-      description: 버그를 어떻게 재현할 수 있는지 단계별로 작성해 주세요.
-      placeholder: 1. ...\n2. ...\n3. ...
-    validations:
-      required: true
-  - type: textarea
-    attributes:
       label: 📝 기대한 동작
       description: 원래 기대한 동작이 무엇인지 작성해 주세요.
       placeholder: 버그가 없을 경우 어떤 동작이 있었어야 하는지 작성해 주세요.
     validations:
       required: true
-  - type: textarea
-    attributes:
-      label: 💻 환경
-      description: 문제가 발생한 환경을 작성해 주세요 (예: OS, 브라우저, 기기 등).
-      placeholder: 예: macOS, Chrome 123, iPhone 13
   - type: textarea
     attributes:
       label: 🙋🏻 참고 자료
