@@ -1,9 +1,0 @@
-blank_issues_enabled: false
-contact_links: []
-issue_templates:
-  - name: "✨ Feature"
-    description: "새로운 기능 추가"
-    file: feature.yml
-  - name: "🐛 Bug"
-    description: "버그 리포트"
-    file: bug.yml
