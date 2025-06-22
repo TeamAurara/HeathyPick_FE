@@ -6,6 +6,7 @@ import React from 'react';
 import { Platform } from 'react-native';
 import "../../global.css";
 
+
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
@@ -16,26 +17,35 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
           },
           default: {},
         }),
       }}>
       <Tabs.Screen
-        name="HomeScreen"
+        name="ReportScreen"
         options={{
-          title: 'Home',
+          title: '리포트',
+          headerTitle: '리포트',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
        <Tabs.Screen
-        name="Tmp"
+        name="RecommendScreen"
         options={{
-          title: 'Tmp',
+          title: '추천',
+          headerTitle: '추천',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
+        <Tabs.Screen
+            name="MyPageScreen"
+            options={{
+                title: '마이페이지',
+                headerTitle: '마이페이지',
+                tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+            }}
+        />
     </Tabs>
   );
 }
