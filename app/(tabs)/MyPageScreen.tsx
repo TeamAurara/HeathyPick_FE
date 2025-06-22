@@ -8,6 +8,7 @@ export default function MyPageScreen() {
             <Stack.Screen options={{ title: "마이페이지", headerShown: false }} />
             <View className="flex-1 justify-center items-center bg-blue-500">
                 <Text className="text-white text-xl">Hello, MyPageScreen!</Text>
+                
             </View>
         </>
     );
