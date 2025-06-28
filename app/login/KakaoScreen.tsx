@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import { useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
 import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
@@ -63,7 +63,7 @@ export default function KakaoScreen() {
             return true;
         } catch (error) {
             console.error("토큰 요청 에러:", error);
-            if (axios.isAxiosError(error)) {
+            if (isAxiosError(error)) {
                 const errorMessage = `상태 코드: ${error.response?.status}, 메시지: ${error.message}, 데이터: ${JSON.stringify(error.response?.data)}`;
                 console.error(errorMessage);
                 setErrorInfo(errorMessage);
@@ -91,7 +91,7 @@ export default function KakaoScreen() {
             return response.data;
         } catch (error) {
             console.error("사용자 정보 요청 에러:", error);
-            if (axios.isAxiosError(error)) {
+            if (isAxiosError(error)) {
                 console.error(`상태 코드: ${error.response?.status}, 메시지: ${error.message}`);
             }
             throw error;
