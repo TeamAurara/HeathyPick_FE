@@ -1,8 +1,10 @@
 import axios, { isAxiosError } from "axios";
 import { useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
-import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, SafeAreaView, Text, TouchableOpacity, View } from "react-native";
 import { WebView, WebViewNavigation } from "react-native-webview";
+import AppLogo from "../../components/AppLogo";
+import KakaoLogo from "../../components/KakaoLogo";
 
 interface KakaoOptions {
     clientId: string;
@@ -234,24 +236,32 @@ export default function KakaoScreen() {
 
     // 로그인 버튼 화면
     return (
-        <View className="flex-1 justify-center items-center bg-yellow-400">
-            <Text className="text-black text-2xl font-bold mb-8">헬시픽</Text>
-            <Text className="text-black text-lg mb-10">건강한 식단 추천 서비스</Text>
-
-            <TouchableOpacity
-                onPress={handleLogin}
-                className="bg-yellow-500 py-4 px-8 rounded-lg"
-            >
-                <Text className="text-black text-lg font-semibold">
-                    카카오로 시작하기
-                </Text>
-            </TouchableOpacity>
+        <SafeAreaView className="flex-1 bg-white">
+            <View className="flex-1 justify-center items-center">
+                <View className="flex-1 justify-center items-center">
+                    <AppLogo width={240} height={224} />
+                </View>
+                
+                <View className="w-full px-6 mb-40">
+                    <TouchableOpacity
+                        onPress={handleLogin}
+                        className="bg-[#FEE500] py-4 px-4 rounded-md flex-row items-center justify-center w-full"
+                    >
+                        <KakaoLogo width={20} height={20} />
+                        <Text className="text-[#3C1E1E] text-base font-medium ml-2">
+                            카카오로 1초만에 시작하기
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
             
             {errorInfo && (
-                <View className="mt-10 p-4 bg-red-200 rounded-lg">
-                    <Text className="text-red-800 text-xs">{errorInfo}</Text>
+                <View className="px-6 pb-4">
+                    <View className="p-4 bg-red-200 rounded-lg">
+                        <Text className="text-red-800 text-xs">{errorInfo}</Text>
+                    </View>
                 </View>
             )}
-        </View>
+        </SafeAreaView>
     );
 }
