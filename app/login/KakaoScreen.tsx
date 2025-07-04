@@ -127,9 +127,9 @@ export default function KakaoScreen() {
                             "로그인 성공",
                             "카카오 계정으로 로그인되었습니다.",
                             [
-                                {
-                                    text: "확인",
-                                    onPress: () => router.replace("/(tabs)/ReportScreen")
+                                { 
+                                    text: "확인", 
+                                    onPress: () => router.push("../signup/SignUpScreen") 
                                 }
                             ]
                         );
@@ -241,7 +241,7 @@ export default function KakaoScreen() {
                 <View className="flex-1 justify-center items-center">
                     <AppLogo width={240} height={224} />
                 </View>
-
+                
                 <View className="w-full px-6 mb-40">
                     <TouchableOpacity
                         onPress={handleLogin}
@@ -252,9 +252,19 @@ export default function KakaoScreen() {
                             카카오로 1초만에 시작하기
                         </Text>
                     </TouchableOpacity>
+                    
+                    {/* 회원가입으로 바로 넘어가는 버튼 */}
+                    <TouchableOpacity
+                        onPress={() => router.push("../signup/SignUpScreen")}
+                        className="mt-4 py-4 px-4 rounded-md flex-row items-center justify-center w-full border border-gray-300"
+                    >
+                        <Text className="text-gray-700 text-base font-medium">
+                            회원가입 바로가기
+                        </Text>
+                    </TouchableOpacity>
                 </View>
             </View>
-
+            
             {errorInfo && (
                 <View className="px-6 pb-4">
                     <View className="p-4 bg-red-200 rounded-lg">
