@@ -72,6 +72,46 @@ const ActivityOption = ({
   );
 };
 
+// 입력 필드 컴포넌트 (X 버튼 포함)
+const InputWithClearButton = ({
+  value,
+  onChangeText,
+  placeholder,
+  maxLength,
+  keyboardType = 'default',
+}: {
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder: string;
+  maxLength?: number;
+  keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
+}) => {
+  const handleClear = () => {
+    onChangeText('');
+  };
+
+  return (
+    <View className="relative w-full">
+      <TextInput
+        className="w-full border-b border-gray-300 py-2 pr-8"
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        keyboardType={keyboardType}
+        maxLength={maxLength}
+      />
+      {value.length > 0 && (
+        <TouchableOpacity
+          onPress={handleClear}
+          className="absolute right-0 top-2"
+        >
+          <Ionicons name="close-circle" size={20} color="#9ca3af" />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
+
 // 신체 정보 입력 필드 컴포넌트
 const BodyInfoInput = ({
   label,
@@ -88,17 +128,31 @@ const BodyInfoInput = ({
   unit: string;
   keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
 }) => {
+  const handleClear = () => {
+    onChangeText('');
+  };
+
   return (
     <View className="mb-8">
       <Text className="text-green-600 mb-2">{label}</Text>
       <View className="flex-row items-center">
-        <TextInput
-          className="flex-1 border-b border-gray-300 py-2"
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          keyboardType={keyboardType}
-        />
+        <View className="flex-1 relative">
+          <TextInput
+            className="flex-1 border-b border-gray-300 py-2 pr-8"
+            value={value}
+            onChangeText={onChangeText}
+            placeholder={placeholder}
+            keyboardType={keyboardType}
+          />
+          {value.length > 0 && (
+            <TouchableOpacity
+              onPress={handleClear}
+              className="absolute right-0 top-2"
+            >
+              <Ionicons name="close-circle" size={20} color="#9ca3af" />
+            </TouchableOpacity>
+          )}
+        </View>
         <Text className="ml-2 text-gray-500">{unit}</Text>
       </View>
     </View>
@@ -159,11 +213,10 @@ export default function SignUpScreen() {
               만나서 반가워요!{'\n'}어떻게 불러드릴까요?
             </Text>
             <Text className="text-green-600 font-medium mb-2">닉네임</Text>
-            <TextInput
-              className="w-full border-b border-gray-300 py-2 mb-4"
-              placeholder="2~12자로 입력해주세요."
+            <InputWithClearButton
               value={nickname}
               onChangeText={setNickname}
+              placeholder="2~12자로 입력해주세요."
               maxLength={12}
             />
           </View>
