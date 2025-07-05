@@ -1482,6 +1482,18 @@
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
+"@quidone/react-native-wheel-picker-feedback@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@quidone/react-native-wheel-picker-feedback/-/react-native-wheel-picker-feedback-2.0.0.tgz#099806044405d56d4364cc1206de716340d2c2ff"
+  integrity sha512-Nb+uwmKtlC9lea1oQp0DDJEE9tOVe3iiFH6IxmoBj+aaGnyHWhNZ0J0VjVcb4+Qp7WtHNQt08JWzEEIAL9zF1g==
+
+"@quidone/react-native-wheel-picker@^1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@quidone/react-native-wheel-picker/-/react-native-wheel-picker-1.4.1.tgz#9f0762465f119a574ff50090f7f460fce90e6f14"
+  integrity sha512-y0Kf3ToC01HcQ2BfNQlBuOO0i0quFfik1HO5DoCZpSlwMhFJt8UYqIc2TryRvsRxbgahBST7W17qXnVj9LDTMw==
+  dependencies:
+    "@rozhkov/react-useful-hooks" "^1.0.10"
+
 "@radix-ui/react-compose-refs@1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@radix-ui/react-compose-refs/-/react-compose-refs-1.1.2.tgz#a2c4c47af6337048ee78ff6dc0d090b390d2bb30"
@@ -1493,6 +1505,11 @@
   integrity sha512-ujc+V6r0HNDviYqIK3rW4ffgYiZ8g5DEHrGJVk4x7kTlLXRDILnKX9vAUYeIsLOoDpDJ0ujpqMkjH4w2ofuo6w==
   dependencies:
     "@radix-ui/react-compose-refs" "1.1.2"
+
+"@react-native-picker/picker@2.11.1":
+  version "2.11.1"
+  resolved "https://registry.yarnpkg.com/@react-native-picker/picker/-/picker-2.11.1.tgz#d8884440abc5f75579d82f9888e50ca047c9ec14"
+  integrity sha512-ThklnkK4fV3yynnIIRBkxxjxR4IFbdMNJVF6tlLdOJ/zEFUEFUEdXY0KmH0iYzMwY8W4/InWsLiA7AkpAbnexA==
 
 "@react-native/assets-registry@0.79.3":
   version "0.79.3"
@@ -1692,6 +1709,13 @@
   integrity sha512-42mZrMzQ0LfKxUb5OHIurYrPYyRsXFLolucILrvm21f0O40Sw0Ufh1bnn/jRqnxZZu7wvpUGIGYM8nS9zVE1Aw==
   dependencies:
     nanoid "^3.3.11"
+
+"@rozhkov/react-useful-hooks@^1.0.10":
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/@rozhkov/react-useful-hooks/-/react-useful-hooks-1.0.10.tgz#3d3a870d419d3703ce88f66174dd27e203e2bf03"
+  integrity sha512-aEDZDiqkpPJX8WqLqcnPGjXzRpCFiZmbtdr5RVUOciNbbANhdNu+oIxJv3g7ezMcgsYhgWp2/XGxU+g/ClsBew==
+  dependencies:
+    default-values "^1.0.2"
 
 "@rtsao/scc@^1.1.0":
   version "1.1.0"
@@ -3150,6 +3174,11 @@ deepmerge@^4.3.1:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.3.1.tgz#44b5f2147cd3b00d4b56137685966f26fd25dd4a"
   integrity sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==
+
+default-values@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/default-values/-/default-values-1.0.2.tgz#cf104c52185c0e60a691113ba0a3880ed4d4d2ed"
+  integrity sha512-OaZEvojjexigvv1IT6N0rKUD5Af7fG11a0jg87jySv5xzjc2+IEW9oWNvqxWLHGhShRRZ0QopCGzGjJv/aY+mw==
 
 defaults@^1.0.3:
   version "1.0.4"
