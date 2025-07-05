@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import WheelPicker from '@quidone/react-native-wheel-picker';
-import WheelPickerFeedback from '@quidone/react-native-wheel-picker-feedback';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -49,6 +48,63 @@ const GenderOption = ({
   );
 };
 
+// 운동 선호도 옵션 컴포넌트
+const ActivityOption = ({ 
+  label, 
+  selected, 
+  onSelect 
+}: { 
+  label: string; 
+  selected: boolean; 
+  onSelect: () => void;
+}) => {
+  return (
+    <TouchableOpacity 
+      onPress={onSelect}
+      className={`w-full py-4 mb-3 items-center justify-center rounded-md ${
+        selected ? 'border-2 border-green-500 bg-white' : 'bg-gray-100'
+      }`}
+    >
+      <Text className={`text-base ${selected ? 'text-green-500 font-bold' : 'text-gray-500'}`}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
+// 신체 정보 입력 필드 컴포넌트
+const BodyInfoInput = ({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  unit,
+  keyboardType = 'numeric',
+}: {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder: string;
+  unit: string;
+  keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
+}) => {
+  return (
+    <View className="mb-8">
+      <Text className="text-green-600 mb-2">{label}</Text>
+      <View className="flex-row items-center">
+        <TextInput
+          className="flex-1 border-b border-gray-300 py-2"
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          keyboardType={keyboardType}
+        />
+        <Text className="ml-2 text-gray-500">{unit}</Text>
+      </View>
+    </View>
+  );
+};
+
 export default function SignUpScreen() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -56,12 +112,26 @@ export default function SignUpScreen() {
   const [nickname, setNickname] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [age, setAge] = useState<number>(25);
+  const [activityLevel, setActivityLevel] = useState<string | null>(null);
+  
+  // 신체 정보
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [targetWeight, setTargetWeight] = useState('');
   
   // 나이 옵션 생성 (10-99세)
   const ageData = Array.from({ length: 90 }, (_, i) => ({
     value: i + 10,
     label: `${i + 10}세`
   }));
+
+  // 운동 선호도 옵션
+  const activityOptions = [
+    '격한 운동을 많이 해요',
+    '약한 운동을 많이 해요',
+    '잘 움직여요',
+    '몸을 거의 움직이지 않아요'
+  ];
 
   const handleBack = () => {
     if (currentStep > 1) {
@@ -78,11 +148,6 @@ export default function SignUpScreen() {
       // 모든 단계 완료 후 메인 화면으로 이동
       router.replace('/(tabs)/ReportScreen');
     }
-  };
-
-  // 휠 피커 변경 시 햅틱 피드백 제공
-  const handleValueChanging = () => {
-    WheelPickerFeedback.triggerSoundAndImpact();
   };
 
   const renderStepContent = () => {
@@ -142,7 +207,6 @@ export default function SignUpScreen() {
                 data={ageData}
                 value={age}
                 onValueChanged={({item}) => setAge(item.value)}
-                onValueChanging={handleValueChanging}
                 itemHeight={40}
                 visibleItemCount={5}
                 style={{ width: 150, height: 180 }}
@@ -156,23 +220,67 @@ export default function SignUpScreen() {
           </View>
         );
       case 4:
-        // 네 번째 단계 내용
+        // 운동 선호도 선택 화면
         return (
           <View className="w-full">
             <Text className="text-3xl font-bold text-center mb-6">
-              네 번째 단계{'\n'}조금만 더 입력해주세요
+              어라라님은{'\n'}평소에...
             </Text>
-            {/* 여기에 추가 입력 필드 */}
+            <Text className="text-center text-gray-500 mb-6">
+              적합한 운동을 추천해 드릴게요!
+            </Text>
+            <View className="w-full">
+              {activityOptions.map((option) => (
+                <ActivityOption
+                  key={option}
+                  label={option}
+                  selected={activityLevel === option}
+                  onSelect={() => setActivityLevel(option)}
+                />
+              ))}
+            </View>
           </View>
         );
       case 5:
-        // 다섯 번째 단계 내용
+        // 신체 정보 입력 화면 (키, 몸무게, 목표 몸무게)
         return (
           <View className="w-full">
             <Text className="text-3xl font-bold text-center mb-6">
-              완료 단계{'\n'}모든 정보가 입력되었습니다
+              어라라님의{'\n'}키를 알려주세요
             </Text>
-            {/* 여기에 추가 입력 필드 */}
+            <Text className="text-center text-gray-500 mb-8">
+              이제 거의 다 왔어요!
+            </Text>
+            
+            <BodyInfoInput
+              label="키"
+              value={height}
+              onChangeText={setHeight}
+              placeholder="지금 몇 cm 인가요?"
+              unit="cm"
+            />
+            
+            {height.trim() !== '' && (
+              <>
+                <BodyInfoInput
+                  label="몸무게"
+                  value={weight}
+                  onChangeText={setWeight}
+                  placeholder="지금 몇 kg 인가요?"
+                  unit="kg"
+                />
+                
+                {weight.trim() !== '' && (
+                  <BodyInfoInput
+                    label="목표 몸무게"
+                    value={targetWeight}
+                    onChangeText={setTargetWeight}
+                    placeholder="목표 몸무게는 몇 kg인가요?"
+                    unit="kg"
+                  />
+                )}
+              </>
+            )}
           </View>
         );
       default:
@@ -189,9 +297,21 @@ export default function SignUpScreen() {
         return gender === null;
       case 3:
         return age < 10 || age > 99;
+      case 4:
+        return activityLevel === null;
+      case 5:
+        return !height.trim() || !weight.trim() || !targetWeight.trim();
       default:
         return false;
     }
+  };
+
+  // 마지막 단계에서 버튼 텍스트 변경
+  const getButtonText = () => {
+    if (currentStep === totalSteps) {
+      return '목표 설정 완료';
+    }
+    return '다음';
   };
 
   return (
@@ -219,7 +339,7 @@ export default function SignUpScreen() {
           disabled={isNextButtonDisabled()}
         >
           <Text className={`text-base font-medium ${isNextButtonDisabled() ? 'text-gray-400' : 'text-white'}`}>
-            {currentStep === totalSteps ? '완료' : '다음'}
+            {getButtonText()}
           </Text>
         </TouchableOpacity>
       </View>
