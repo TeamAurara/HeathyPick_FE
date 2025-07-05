@@ -1,4 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
+import WheelPicker from '@quidone/react-native-wheel-picker';
+import WheelPickerFeedback from '@quidone/react-native-wheel-picker-feedback';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -53,6 +55,13 @@ export default function SignUpScreen() {
   const totalSteps = 5; // 총 단계 수
   const [nickname, setNickname] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
+  const [age, setAge] = useState<number>(25);
+  
+  // 나이 옵션 생성 (10-99세)
+  const ageData = Array.from({ length: 90 }, (_, i) => ({
+    value: i + 10,
+    label: `${i + 10}세`
+  }));
 
   const handleBack = () => {
     if (currentStep > 1) {
@@ -69,6 +78,11 @@ export default function SignUpScreen() {
       // 모든 단계 완료 후 메인 화면으로 이동
       router.replace('/(tabs)/ReportScreen');
     }
+  };
+
+  // 휠 피커 변경 시 햅틱 피드백 제공
+  const handleValueChanging = () => {
+    WheelPickerFeedback.triggerSoundAndImpact();
   };
 
   const renderStepContent = () => {
@@ -114,13 +128,31 @@ export default function SignUpScreen() {
           </View>
         );
       case 3:
-        // 세 번째 단계 내용
+        // 나이 선택 화면
         return (
           <View className="w-full">
             <Text className="text-3xl font-bold text-center mb-6">
-              마지막 단계{'\n'}거의 다 왔어요!
+              어라라님의{'\n'}나이는
             </Text>
-            {/* 여기에 추가 입력 필드 */}
+            <Text className="text-center text-gray-500 mb-6">
+              맞춤형 건강 관리를 위해 필요해요!
+            </Text>
+            <View className="items-center border-t border-b border-gray-200 py-4">
+              <WheelPicker
+                data={ageData}
+                value={age}
+                onValueChanged={({item}) => setAge(item.value)}
+                onValueChanging={handleValueChanging}
+                itemHeight={40}
+                visibleItemCount={5}
+                style={{ width: 150, height: 180 }}
+                itemTextStyle={{ fontSize: 24, fontWeight: 'bold' }}
+                overlayItemStyle={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                  borderRadius: 8
+                }}
+              />
+            </View>
           </View>
         );
       case 4:
@@ -155,6 +187,8 @@ export default function SignUpScreen() {
         return !nickname.trim();
       case 2:
         return gender === null;
+      case 3:
+        return age < 10 || age > 99;
       default:
         return false;
     }
