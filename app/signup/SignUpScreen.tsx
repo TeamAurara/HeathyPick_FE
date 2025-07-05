@@ -3,25 +3,56 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-// 스텝별 진행 상황을 표시하는 프로그레스 바 컴포넌트
-const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) => {
-  const progress = (currentStep / totalSteps) * 100;
-  
+// 스텝 인디케이터 컴포넌트 - 5개의 막대 형태
+const StepIndicator = ({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) => {
   return (
-    <View className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
-      <View 
-        className="h-full bg-green-500" 
-        style={{ width: `${progress}%` }} 
-      />
+    <View className="w-full flex-row justify-between">
+      {Array.from({ length: totalSteps }).map((_, index) => {
+        const stepNumber = index + 1;
+        const isActive = stepNumber <= currentStep;
+        
+        return (
+          <View 
+            key={stepNumber}
+            className={`h-1.5 flex-1 mx-0.5 ${isActive ? 'bg-green-500' : 'bg-gray-200'}`}
+            style={index === 0 ? { marginLeft: 0 } : index === totalSteps - 1 ? { marginRight: 0 } : {}}
+          />
+        );
+      })}
     </View>
+  );
+};
+
+// 성별 선택 옵션 컴포넌트
+const GenderOption = ({ 
+  label, 
+  selected, 
+  onSelect 
+}: { 
+  label: string; 
+  selected: boolean; 
+  onSelect: () => void;
+}) => {
+  return (
+    <TouchableOpacity 
+      onPress={onSelect}
+      className={`flex-1 py-12 items-center justify-center rounded-md ${
+        selected ? 'border-2 border-green-500 bg-white' : 'bg-gray-100'
+      }`}
+    >
+      <Text className={`text-lg ${selected ? 'text-green-500 font-bold' : 'text-gray-500'}`}>
+        {label}
+      </Text>
+    </TouchableOpacity>
   );
 };
 
 export default function SignUpScreen() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3; // 총 단계 수
+  const totalSteps = 5; // 총 단계 수
   const [nickname, setNickname] = useState('');
+  const [gender, setGender] = useState<'male' | 'female' | null>(null);
 
   const handleBack = () => {
     if (currentStep > 1) {
@@ -59,13 +90,27 @@ export default function SignUpScreen() {
           </View>
         );
       case 2:
-        // 두 번째 단계 내용
+        // 성별 선택 화면
         return (
           <View className="w-full">
             <Text className="text-3xl font-bold text-center mb-6">
-              두 번째 단계{'\n'}추가 정보를 입력해주세요
+              어라라님의{'\n'}성별은
             </Text>
-            {/* 여기에 추가 입력 필드 */}
+            <Text className="text-center text-gray-500 mb-6">
+              맞춤형 기록 서비스 제공을 위해 필요해요!
+            </Text>
+            <View className="flex-row space-x-4">
+              <GenderOption 
+                label="남자" 
+                selected={gender === 'male'} 
+                onSelect={() => setGender('male')} 
+              />
+              <GenderOption 
+                label="여자" 
+                selected={gender === 'female'} 
+                onSelect={() => setGender('female')} 
+              />
+            </View>
           </View>
         );
       case 3:
@@ -78,20 +123,52 @@ export default function SignUpScreen() {
             {/* 여기에 추가 입력 필드 */}
           </View>
         );
+      case 4:
+        // 네 번째 단계 내용
+        return (
+          <View className="w-full">
+            <Text className="text-3xl font-bold text-center mb-6">
+              네 번째 단계{'\n'}조금만 더 입력해주세요
+            </Text>
+            {/* 여기에 추가 입력 필드 */}
+          </View>
+        );
+      case 5:
+        // 다섯 번째 단계 내용
+        return (
+          <View className="w-full">
+            <Text className="text-3xl font-bold text-center mb-6">
+              완료 단계{'\n'}모든 정보가 입력되었습니다
+            </Text>
+            {/* 여기에 추가 입력 필드 */}
+          </View>
+        );
       default:
         return null;
+    }
+  };
+
+  // 현재 단계에 따른 다음 버튼 활성화 여부 결정
+  const isNextButtonDisabled = () => {
+    switch (currentStep) {
+      case 1:
+        return !nickname.trim();
+      case 2:
+        return gender === null;
+      default:
+        return false;
     }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* 헤더 영역 */}
-      <View className="px-4 py-2">
-        <TouchableOpacity onPress={handleBack} className="p-2">
+      <View className="px-4 pt-6">
+        <TouchableOpacity onPress={handleBack} className="p-2 mb-4">
           <Ionicons name="chevron-back" size={24} color="black" />
         </TouchableOpacity>
-        <View className="mt-2">
-          <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
+        <View className="px-4">
+          <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
         </View>
       </View>
 
@@ -104,10 +181,10 @@ export default function SignUpScreen() {
       <View className="px-6 pb-8">
         <TouchableOpacity
           onPress={handleNext}
-          className="w-full bg-gray-100 py-4 rounded-md items-center"
-          disabled={currentStep === 1 && !nickname.trim()}
+          className={`w-full py-4 rounded-md items-center ${isNextButtonDisabled() ? 'bg-gray-100' : 'bg-green-500'}`}
+          disabled={isNextButtonDisabled()}
         >
-          <Text className="text-base font-medium text-gray-800">
+          <Text className={`text-base font-medium ${isNextButtonDisabled() ? 'text-gray-400' : 'text-white'}`}>
             {currentStep === totalSteps ? '완료' : '다음'}
           </Text>
         </TouchableOpacity>
