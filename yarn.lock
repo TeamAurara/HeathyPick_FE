@@ -1482,11 +1482,6 @@
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
-"@quidone/react-native-wheel-picker-feedback@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@quidone/react-native-wheel-picker-feedback/-/react-native-wheel-picker-feedback-2.0.0.tgz#099806044405d56d4364cc1206de716340d2c2ff"
-  integrity sha512-Nb+uwmKtlC9lea1oQp0DDJEE9tOVe3iiFH6IxmoBj+aaGnyHWhNZ0J0VjVcb4+Qp7WtHNQt08JWzEEIAL9zF1g==
-
 "@quidone/react-native-wheel-picker@^1.4.1":
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/@quidone/react-native-wheel-picker/-/react-native-wheel-picker-1.4.1.tgz#9f0762465f119a574ff50090f7f460fce90e6f14"
