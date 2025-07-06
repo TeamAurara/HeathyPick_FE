@@ -17,13 +17,13 @@ const AgeStep = ({ age, setAge, nickname = '어라라' }: AgeStepProps) => {
 
   return (
     <View className="w-full">
-      <Text className="text-3xl font-bold text-center mb-6">
-        {nickname}님의{'\n'}나이는
+      <Text className="text-3xl font-bold text-center mb-2 mt-10">
+        {nickname}님의{'\n'}나이를 알려주세요!
       </Text>
-      <Text className="text-center text-gray-500 mb-6">
-        맞춤형 건강 관리를 위해 필요해요!
+      <Text className="text-center text-green-400 mb-6">
+        만 나이를 입력해주세요!
       </Text>
-      <View className="items-center border-t border-b border-gray-200 py-4">
+      <View className="items-center py-4">
         <WheelPicker
           data={ageData}
           value={age}
@@ -34,7 +34,7 @@ const AgeStep = ({ age, setAge, nickname = '어라라' }: AgeStepProps) => {
           itemTextStyle={{ fontSize: 24, fontWeight: 'bold' }}
           overlayItemStyle={{
             backgroundColor: 'rgba(0, 0, 0, 0.05)',
-            borderRadius: 8
+            borderRadius: 8,
           }}
         />
       </View>
