@@ -39,7 +39,7 @@ const BodyInfoStep = ({
         value={height}
         onChangeText={setHeight}
         placeholder="지금 몇 cm 인가요?"
-        unit="cm"
+       
       />
       
       {height.trim() !== '' && (
@@ -49,7 +49,7 @@ const BodyInfoStep = ({
             value={weight}
             onChangeText={setWeight}
             placeholder="지금 몇 kg 인가요?"
-            unit="kg"
+         
           />
           
           {weight.trim() !== '' && (
@@ -58,7 +58,7 @@ const BodyInfoStep = ({
               value={targetWeight}
               onChangeText={setTargetWeight}
               placeholder="목표 몸무게는 몇 kg인가요?"
-              unit="kg"
+           
             />
           )}
         </>

@@ -7,7 +7,7 @@ interface BodyInfoInputProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder: string;
-  unit: string;
+  unit?: string;
   keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
 }
 
