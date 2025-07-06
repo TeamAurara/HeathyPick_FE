@@ -1,14 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { StepIndicator } from './components/common/index';
-import { ActivityStep, AgeStep, BodyInfoStep, GenderStep, NicknameStep } from './components/steps/index';
+import { ActivityStep, AgeStep, BodyInfoStep, GenderStep, NicknameStep, SuccessStep } from './components/steps/index';
 
 export default function SignUpScreen() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 5; // 총 단계 수
+  const [isCompleted, setIsCompleted] = useState(false); // 회원가입 완료 여부
   
   // 사용자 정보 상태
   const [nickname, setNickname] = useState('');
@@ -22,6 +23,11 @@ export default function SignUpScreen() {
   const [targetWeight, setTargetWeight] = useState('');
   
   const handleBack = () => {
+    if (isCompleted) {
+      // 완료 화면에서는 뒤로가기 불가
+      return;
+    }
+    
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     } else {
@@ -33,12 +39,27 @@ export default function SignUpScreen() {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
-      // 모든 단계 완료 후 메인 화면으로 이동
-      router.replace('/(tabs)/ReportScreen');
+      // 모든 단계 완료 후 성공 화면으로 전환
+      setIsCompleted(true);
     }
   };
 
+  const handleMainButtonPress = () => {
+    // 메인 화면으로 이동
+    router.replace('/(tabs)/ReportScreen');
+  };
+
   const renderStepContent = () => {
+    if (isCompleted) {
+      return (
+        <SuccessStep 
+          nickname={nickname}
+          targetWeight={targetWeight}
+          onMainButtonPress={handleMainButtonPress}
+        />
+      );
+    }
+
     switch (currentStep) {
       case 1:
         return <NicknameStep nickname={nickname} setNickname={setNickname} />;
@@ -95,33 +116,43 @@ export default function SignUpScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      {/* 헤더 영역 */}
-      <View className="px-4 pt-6">
-        <TouchableOpacity onPress={handleBack} className="p-2 mb-4">
-          <Ionicons name="chevron-back" size={24} color="black" />
-        </TouchableOpacity>
-        <View className="px-4">
-          <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        className="flex-1"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
+      >
+        {/* 헤더 영역 - 완료 화면에서는 표시하지 않음 */}
+        {!isCompleted && (
+          <View className="px-4 pt-12">
+            <TouchableOpacity onPress={handleBack} className="p-2 mb-4">
+              <Ionicons name="chevron-back" size={24} color="black" />
+            </TouchableOpacity>
+            <View className="px-4">
+              <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+            </View>
+          </View>
+        )}
+
+        {/* 콘텐츠 영역 */}
+        <View className="flex-1 px-6 py-8">
+          {renderStepContent()}
         </View>
-      </View>
 
-      {/* 콘텐츠 영역 */}
-      <View className="flex-1 px-6 py-8">
-        {renderStepContent()}
-      </View>
-
-      {/* 하단 버튼 */}
-      <View className="px-6 pb-8">
-        <TouchableOpacity
-          onPress={handleNext}
-          className={`w-full py-4 rounded-md items-center ${isNextButtonDisabled() ? 'bg-gray-100' : 'bg-green-500'}`}
-          disabled={isNextButtonDisabled()}
-        >
-          <Text className={`text-base font-medium ${isNextButtonDisabled() ? 'text-gray-400' : 'text-white'}`}>
-            {getButtonText()}
-          </Text>
-        </TouchableOpacity>
-      </View>
+        {/* 하단 버튼 - 완료 화면에서는 표시하지 않음 */}
+        {!isCompleted && (
+          <View className="px-6 pb-8">
+            <TouchableOpacity
+              onPress={handleNext}
+              className={`w-full py-4 rounded-md items-center ${isNextButtonDisabled() ? 'bg-gray-100' : 'bg-green-500'}`}
+              disabled={isNextButtonDisabled()}
+            >
+              <Text className={`text-base font-medium ${isNextButtonDisabled() ? 'text-gray-400' : 'text-white'}`}>
+                {getButtonText()}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
