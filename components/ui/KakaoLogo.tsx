@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import KakaoLogoSvg from '../assets/images/kakaoLogo.svg';
+import KakaoLogoSvg from '../../assets/images/kakaoLogo.svg';
 
 interface KakaoLogoProps {
   width?: number;
@@ -15,4 +15,4 @@ const KakaoLogo: React.FC<KakaoLogoProps> = ({ width = 24, height = 24 }) => {
   );
 };
 
-export default KakaoLogo; 
+export default KakaoLogo;
