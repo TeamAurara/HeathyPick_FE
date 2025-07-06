@@ -24,12 +24,12 @@ const BodyInfoInput = ({
   };
 
   return (
-    <View className="mb-8">
+    <View className="mb-6">
       <Text className="text-green-600 mb-2">{label}</Text>
       <View className="flex-row items-center">
         <View className="flex-1 relative">
           <TextInput
-            className="flex-1 border-b border-gray-300 py-2 pr-8"
+            className="flex-1 border-b border-gray-300 py-3 pr-8"
             value={value}
             onChangeText={onChangeText}
             placeholder={placeholder}
@@ -38,7 +38,7 @@ const BodyInfoInput = ({
           {value.length > 0 && (
             <TouchableOpacity
               onPress={handleClear}
-              className="absolute right-0 top-2"
+              className="absolute right-0 top-3"
             >
               <Ionicons name="close-circle" size={20} color="#9ca3af" />
             </TouchableOpacity>

@@ -11,7 +11,7 @@ const GenderOption = ({ label, selected, onSelect }: GenderOptionProps) => {
   return (
     <TouchableOpacity 
       onPress={onSelect}
-      className={`flex-1 py-12 items-center justify-center rounded-md ${
+      className={`flex-1 py-12 items-center justify-center  rounded-md ${
         selected ? 'border-2 border-green-500 bg-white' : 'bg-gray-100'
       }`}
     >

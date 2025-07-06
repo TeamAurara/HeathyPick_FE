@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { ScrollView, Text } from 'react-native';
 import BodyInfoInput from '../common/BodyInfoInput';
 
 interface BodyInfoStepProps {
@@ -22,7 +22,11 @@ const BodyInfoStep = ({
   nickname = '어라라'
 }: BodyInfoStepProps) => {
   return (
-    <View className="w-full">
+    <ScrollView 
+      className="w-full" 
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 20 }}
+    >
       <Text className="text-3xl font-bold text-center mb-6">
         {nickname}님의{'\n'}키를 알려주세요
       </Text>
@@ -59,7 +63,7 @@ const BodyInfoStep = ({
           )}
         </>
       )}
-    </View>
+    </ScrollView>
   );
 };
 

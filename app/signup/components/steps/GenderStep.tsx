@@ -17,7 +17,7 @@ const GenderStep = ({ gender, setGender, nickname = '어라라' }: GenderStepPro
       <Text className="text-center text-gray-500 mb-6">
         맞춤형 기록 서비스 제공을 위해 필요해요!
       </Text>
-      <View className="flex-row space-x-4">
+      <View className="flex-row space-x-4 px-4 gap-4">
         <GenderOption 
           label="남자" 
           selected={gender === 'male'} 
