@@ -11,10 +11,10 @@ interface GenderStepProps {
 const GenderStep = ({ gender, setGender, nickname = '어라라' }: GenderStepProps) => {
   return (
     <View className="w-full">
-      <Text className="text-3xl font-bold text-center mb-6">
+      <Text className="text-3xl font-bold text-center mb-6 mt-10">
         {nickname}님의{'\n'}성별은
       </Text>
-      <Text className="text-center text-gray-500 mb-6">
+      <Text className="text-center text-green-400 mb-6 mt-10">
         맞춤형 기록 서비스 제공을 위해 필요해요!
       </Text>
       <View className="flex-row space-x-4 px-4 gap-4">
