@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { StepIndicator } from './components/common/index';
 import { ActivityStep, AgeStep, BodyInfoStep, GenderStep, NicknameStep, SuccessStep } from './components/steps/index';
 
@@ -116,14 +117,17 @@ export default function SignUpScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
+      <KeyboardAwareScrollView
+        enableOnAndroid={true}
+        enableAutomaticScroll={true}
+        keyboardOpeningTime={0}
+        extraScrollHeight={Platform.OS === 'ios' ? 120 : 140}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ flexGrow: 1 }}
       >
         {/* 헤더 영역 - 완료 화면에서는 표시하지 않음 */}
         {!isCompleted && (
-          <View className="px-4 pt-12">
+          <View className="px-4 pt-6">
             <TouchableOpacity onPress={handleBack} className="p-2 mb-4">
               <Ionicons name="chevron-back" size={24} color="black" />
             </TouchableOpacity>
@@ -140,7 +144,7 @@ export default function SignUpScreen() {
 
         {/* 하단 버튼 - 완료 화면에서는 표시하지 않음 */}
         {!isCompleted && (
-          <View className="px-6 pb-8">
+          <View className="px-6 pb-8 mt-4">
             <TouchableOpacity
               onPress={handleNext}
               className={`w-full py-4 rounded-md items-center ${isNextButtonDisabled() ? 'bg-gray-100' : 'bg-green-500'}`}
@@ -152,7 +156,7 @@ export default function SignUpScreen() {
             </TouchableOpacity>
           </View>
         )}
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }
