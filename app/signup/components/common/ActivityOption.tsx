@@ -12,7 +12,7 @@ const ActivityOption = ({ label, selected, onSelect }: ActivityOptionProps) => {
     <TouchableOpacity 
       onPress={onSelect}
       className={`w-full py-4 mb-3 items-center justify-center rounded-md ${
-        selected ? 'border-2 border-green-500 bg-white' : 'bg-gray-100'
+        selected ? 'border border-green-500 bg-white' : 'bg-gray-100'
       }`}
     >
       <Text className={`text-base ${selected ? 'text-green-500 font-bold' : 'text-gray-500'}`}>

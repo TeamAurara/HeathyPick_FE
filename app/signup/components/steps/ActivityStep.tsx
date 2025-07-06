@@ -19,13 +19,11 @@ const ActivityStep = ({ activityLevel, setActivityLevel, nickname = '어라라' 
 
   return (
     <View className="w-full">
-      <Text className="text-3xl font-bold text-center mb-6">
+      <Text className="text-3xl font-bold text-center mb-6 mt-10">
         {nickname}님은{'\n'}평소에...
       </Text>
-      <Text className="text-center text-gray-500 mb-6">
-        적합한 운동을 추천해 드릴게요!
-      </Text>
-      <View className="w-full">
+    
+      <View className="w-full mt-10">
         {activityOptions.map((option) => (
           <ActivityOption
             key={option}
