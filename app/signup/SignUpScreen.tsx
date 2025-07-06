@@ -127,11 +127,11 @@ export default function SignUpScreen() {
       >
         {/* 헤더 영역 - 완료 화면에서는 표시하지 않음 */}
         {!isCompleted && (
-          <View className="px-4 pt-6">
+          <View className="px-4 pt-12 w-full">
             <TouchableOpacity onPress={handleBack} className="p-2 mb-4">
               <Ionicons name="chevron-back" size={24} color="black" />
             </TouchableOpacity>
-            <View className="px-4">
+            <View className="px-4 pt-4">
               <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
             </View>
           </View>
