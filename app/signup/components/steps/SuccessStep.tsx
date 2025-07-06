@@ -11,28 +11,30 @@ const SuccessStep = ({ nickname, targetWeight, onMainButtonPress }: SuccessStepP
   return (
     <View className="flex-1 items-center justify-between py-4">
       {/* 상단 텍스트 */}
-      <View className="items-center">
+      <View className="items-center mt-20">
         <Text className="text-3xl font-bold text-center mb-2">
           {nickname}님이
         </Text>
-        <Text className="text-3xl font-bold text-center mb-8">
+        <Text className="text-3xl font-bold text-center">
           {targetWeight}kg이 될 때까지
         </Text>
       </View>
 
-      {/* 중앙 이미지 */}
-      <View className="flex-1 justify-center items-center w-full bg-[#8CB369] rounded-lg my-8">
-        <Text className="text-2xl text-center text-black font-bold">
-          캐릭터 이미지
+      {/* 중앙 이미지와 텍스트 */}
+      <View className="flex-1 w-full flex-grow justify-center items-center my-8">
+        <View className="aspect-square w-4/5 bg-green-400 rounded-lg justify-center items-center">
+          <Text className="text-2xl text-center text-black font-bold">
+            캐릭터 이미지
+          </Text>
+        </View>
+        
+        <Text className="text-xl text-center font-medium mt-4">
+          힐픽과 함께 힘내봐요!
         </Text>
       </View>
 
-      {/* 하단 텍스트와 버튼 */}
-      <View className="items-center w-full">
-        <Text className="text-xl text-center mb-8 font-medium">
-          힐픽과 함께 힘내봐요!
-        </Text>
-
+      {/* 하단 버튼 */}
+      <View className="items-center w-full mt-4">
         <TouchableOpacity
           onPress={onMainButtonPress}
           className="w-full py-4 rounded-md items-center bg-green-500"
