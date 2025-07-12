@@ -1,14 +1,18 @@
 import WheelPicker from '@quidone/react-native-wheel-picker';
 import React from 'react';
 import { Text, View } from 'react-native';
+import {useSignUpStore} from "@/stores/signup/SignupStore";
 
 interface AgeStepProps {
-  age: number;
-  setAge: (age: number) => void;
+  age?: number;
+  setAge?: (age: number) => void;
   nickname?: string;
 }
 
-const AgeStep = ({ age, setAge, nickname = '어라라' }: AgeStepProps) => {
+const AgeStep = ({}: AgeStepProps) => {
+  // Zustand 스토어에서 상태와 액션 가져오기
+  const { age, setAge, nickname } = useSignUpStore();
+
   // 나이 옵션 생성 (10-99세)
   const ageData = Array.from({ length: 90 }, (_, i) => ({
     value: i + 10,
@@ -42,4 +46,4 @@ const AgeStep = ({ age, setAge, nickname = '어라라' }: AgeStepProps) => {
   );
 };
 
-export default AgeStep; 
+export default AgeStep;

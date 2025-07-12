@@ -1,13 +1,17 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import {useSignUpStore} from "@/stores/signup/SignupStore";
 
 interface SuccessStepProps {
-  nickname: string;
-  targetWeight: string;
+  nickname?: string;
+  targetWeight?: string;
   onMainButtonPress: () => void;
 }
 
-const SuccessStep = ({ nickname, targetWeight, onMainButtonPress }: SuccessStepProps) => {
+const SuccessStep = ({ onMainButtonPress }: SuccessStepProps) => {
+  // Zustand 스토어에서 상태 가져오기
+  const { nickname, targetWeight } = useSignUpStore();
+
   return (
     <View className="flex-1 items-center justify-between py-4">
       {/* 상단 텍스트 */}
@@ -27,7 +31,7 @@ const SuccessStep = ({ nickname, targetWeight, onMainButtonPress }: SuccessStepP
             캐릭터 이미지
           </Text>
         </View>
-        
+
         <Text className="text-xl text-center font-medium mt-4">
           힐픽과 함께 힘내봐요!
         </Text>
@@ -48,4 +52,4 @@ const SuccessStep = ({ nickname, targetWeight, onMainButtonPress }: SuccessStepP
   );
 };
 
-export default SuccessStep; 
+export default SuccessStep;
