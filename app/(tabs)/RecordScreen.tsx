@@ -1,3 +1,4 @@
+import CustomCalendars from '@/components/record/CustomCalendars';
 import CalendarIcon from '@/components/ui/CalendarIcon';
 import MealCard from '@/components/ui/MealCard';
 import SupplementCard from '@/components/ui/SupplementCard';
@@ -5,7 +6,7 @@ import WaterInputModal from '@/components/ui/WaterInputModal';
 import WeightCard from '@/components/ui/WeightCard';
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 // 날짜 형식을 YYYY-MM-DD 문자열로 변환하는 함수
 const formatDateKey = (date: Date): string => {
@@ -137,6 +138,7 @@ export default function RecordScreen() {
   const [supplementData, setSupplementData] = useState<any[]>([]);
   const [weightData, setWeightData] = useState<any>(null);
   const [isWaterModalVisible, setIsWaterModalVisible] = useState(false);
+  const [isCalendarVisible, setIsCalendarVisible] = useState(false);
   
   // 날짜가 변경될 때마다 해당 날짜의 데이터를 불러옴
   useEffect(() => {
@@ -268,6 +270,33 @@ export default function RecordScreen() {
     // });
   };
 
+  // 달력 아이콘 클릭 핸들러
+  const handleCalendarIconPress = () => {
+    setIsCalendarVisible(true);
+  };
+
+  // 날짜 선택 핸들러
+  const handleSelectDate = (dateString: string) => {
+    // 선택한 날짜로 currentDate 업데이트
+    setCurrentDate(new Date(dateString));
+    setIsCalendarVisible(false);
+  };
+
+  // 데이터가 있는 날짜에 마커 표시하는 함수
+  const getMarkedDates = () => {
+    const markedDates: Record<string, any> = {};
+    
+    // 식사 데이터가 있는 날짜에 마커 추가
+    Object.keys(mockMealData).forEach(dateKey => {
+      markedDates[dateKey] = { 
+        marked: true, 
+        dotColor: '#22c55e' 
+      };
+    });
+    
+    return markedDates;
+  };
+  
   // 데이터가 로딩 중일 때 표시할 내용
   if (!mealData) {
     return (
@@ -286,7 +315,10 @@ export default function RecordScreen() {
         <Text className="text-center text-2xl font-bold">기록</Text>
         
         {/* 달력 아이콘 */}
-        <TouchableOpacity className="absolute right-4 top-12">
+        <TouchableOpacity 
+          className="absolute right-4 top-12"
+          onPress={handleCalendarIconPress}
+        >
           <View className="w-10 h-10 justify-center items-center">
             <CalendarIcon width={28} height={28} />
           </View>
@@ -400,6 +432,29 @@ export default function RecordScreen() {
         onSave={handleSaveWaterAmount}
         currentAmount={mealData?.water?.description !== '-' ? parseFloat(mealData.water.description) : 0}
       />
+
+      {/* 캘린더 모달 */}
+      <Modal
+        transparent={true}
+        visible={isCalendarVisible}
+        animationType="fade"
+        onRequestClose={() => setIsCalendarVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setIsCalendarVisible(false)}>
+          <View className="flex-1 bg-black/50 justify-center items-center">
+            <TouchableWithoutFeedback>
+              <View className="bg-white rounded-lg p-4 w-11/12 max-w-md">
+                <CustomCalendars
+                  currentDate={currentDate}
+                  handleSelectDate={handleSelectDate}
+                  getMarkedDates={getMarkedDates}
+                  formatDateKey={formatDateKey}
+                />
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 }
