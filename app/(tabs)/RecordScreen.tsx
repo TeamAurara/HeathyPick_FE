@@ -1,8 +1,10 @@
 import CalendarIcon from '@/components/ui/CalendarIcon';
 import MealCard from '@/components/ui/MealCard';
+import SupplementCard from '@/components/ui/SupplementCard';
+import WeightCard from '@/components/ui/WeightCard';
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 // 날짜 형식을 YYYY-MM-DD 문자열로 변환하는 함수
 const formatDateKey = (date: Date): string => {
@@ -87,27 +89,80 @@ const mockMealData = {
   }
 };
 
+// 임시 영양제 데이터
+const mockSupplementData = {
+  // 오늘 날짜
+  [formatDateKey(new Date())]: [
+    { id: 1, name: '종합 비타민', timeToTake: '아침 식사 후', isTaken: true },
+    { id: 2, name: '오메가3', timeToTake: '저녁 식사 후', isTaken: false },
+    { id: 3, name: '칼슘 마그네슘', timeToTake: '취침 전', isTaken: false }
+  ],
+  // 어제 날짜
+  [formatDateKey(new Date(new Date().setDate(new Date().getDate() - 1)))]: [
+    { id: 1, name: '종합 비타민', timeToTake: '아침 식사 후', isTaken: true },
+    { id: 2, name: '오메가3', timeToTake: '저녁 식사 후', isTaken: true },
+    { id: 3, name: '칼슘 마그네슘', timeToTake: '취침 전', isTaken: true }
+  ],
+  // 내일 날짜
+  [formatDateKey(new Date(new Date().setDate(new Date().getDate() + 1)))]: [
+    { id: 1, name: '종합 비타민', timeToTake: '아침 식사 후', isTaken: false },
+    { id: 2, name: '오메가3', timeToTake: '저녁 식사 후', isTaken: false },
+    { id: 3, name: '칼슘 마그네슘', timeToTake: '취침 전', isTaken: false }
+  ]
+};
+
+// 임시 체중 데이터
+const mockWeightData = {
+  // 오늘 날짜
+  [formatDateKey(new Date())]: {
+    currentWeight: 68.5,
+    previousWeight: 69.2,
+    targetWeight: 65.0
+  },
+  // 어제 날짜
+  [formatDateKey(new Date(new Date().setDate(new Date().getDate() - 1)))]: {
+    currentWeight: 69.2,
+    previousWeight: 69.5,
+    targetWeight: 65.0
+  },
+  // 내일 날짜 (데이터 없음)
+  [formatDateKey(new Date(new Date().setDate(new Date().getDate() + 1)))]: null
+};
+
 export default function RecordScreen() {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [mealData, setMealData] = useState<any>(null);
+  const [supplementData, setSupplementData] = useState<any[]>([]);
+  const [weightData, setWeightData] = useState<any>(null);
   
-  // 날짜가 변경될 때마다 해당 날짜의 식사 데이터를 불러옴
+  // 날짜가 변경될 때마다 해당 날짜의 데이터를 불러옴
   useEffect(() => {
     const dateKey = formatDateKey(currentDate);
     
-    // 해당 날짜의 데이터가 있으면 불러오고, 없으면 빈 데이터 생성
-    const data = mockMealData[dateKey] || {
+    // 식사 데이터 불러오기
+    const mData = mockMealData[dateKey] || {
       breakfast: { description: '-', currentValue: 0, maxValue: 500 },
       lunch: { description: '-', currentValue: 0, maxValue: 500 },
       dinner: { description: '-', currentValue: 0, maxValue: 500 },
       water: { description: '-', currentValue: 0, maxValue: 200 }
     };
+    setMealData(mData);
     
-    setMealData(data);
+    // 영양제 데이터 불러오기
+    const sData = mockSupplementData[dateKey] || [];
+    setSupplementData(sData);
+    
+    // 체중 데이터 불러오기
+    const wData = mockWeightData[dateKey] || null;
+    setWeightData(wData);
     
     // 실제 앱에서는 여기서 API 호출을 통해 해당 날짜의 데이터를 가져올 수 있습니다
-    // fetchMealData(dateKey).then(data => setMealData(data));
+    // fetchData(dateKey).then(data => {
+    //   setMealData(data.meals);
+    //   setSupplementData(data.supplements);
+    //   setWeightData(data.weight);
+    // });
   }, [currentDate]);
   
   // 날짜 포맷팅 함수
@@ -162,6 +217,18 @@ export default function RecordScreen() {
     });
   };
 
+  // 영양제 카드 클릭 핸들러
+  const handleSupplementCardPress = (supplementId: number) => {
+    console.log(`영양제 ID ${supplementId} 카드가 클릭되었습니다. 날짜: ${formatDateKey(currentDate)}`);
+    // 영양제 상세 페이지로 이동하거나 복용 상태 토글 등의 기능 구현 가능
+  };
+
+  // 체중 카드 클릭 핸들러
+  const handleWeightCardPress = () => {
+    console.log(`체중 카드가 클릭되었습니다. 날짜: ${formatDateKey(currentDate)}`);
+    // 체중 기록 상세 페이지로 이동하거나 체중 입력 모달 표시 등의 기능 구현 가능
+  };
+
   // 데이터가 로딩 중일 때 표시할 내용
   if (!mealData) {
     return (
@@ -203,9 +270,10 @@ export default function RecordScreen() {
         </TouchableOpacity>
       </View>
       
-      {/* 메인 콘텐츠 영역 */}
-      <View className="flex-1 p-4">
-        <View className="flex-row flex-wrap justify-between">
+      {/* 메인 콘텐츠 영역 - 스크롤 가능하도록 ScrollView로 변경 */}
+      <ScrollView className="flex-1 px-4">
+        {/* 식사 카드 섹션 */}
+        <View className="flex-row flex-wrap justify-between mb-6">
           {/* 아침 카드 */}
           <MealCard 
             title="아침" 
@@ -247,7 +315,44 @@ export default function RecordScreen() {
             onPress={() => handleMealCardPress('물 섭취')}
           />
         </View>
-      </View>
+        
+        {/* 영양제 알림 섹션 */}
+        {supplementData.length > 0 && (
+          <View className="mb-6">
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-xl font-bold">영양제 알림</Text>
+              <TouchableOpacity>
+                <Text className="text-green-500">+ 추가</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {supplementData.map((supplement) => (
+              <SupplementCard
+                key={supplement.id}
+                name={supplement.name}
+                timeToTake={supplement.timeToTake}
+                isTaken={supplement.isTaken}
+                onPress={() => handleSupplementCardPress(supplement.id)}
+              />
+            ))}
+          </View>
+        )}
+        
+        {/* 체중 기록 섹션 */}
+        {weightData && (
+          <View className="mb-6">
+            <WeightCard 
+              currentWeight={weightData.currentWeight}
+              previousWeight={weightData.previousWeight}
+              targetWeight={weightData.targetWeight}
+              onPress={handleWeightCardPress}
+            />
+          </View>
+        )}
+        
+        {/* 하단 여백 */}
+        <View className="h-6" />
+      </ScrollView>
     </View>
   );
 }
