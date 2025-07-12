@@ -1,21 +1,33 @@
+import FoodBottomSheet from '@/components/ui/FoodBottomSheet';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function MealDetailScreen() {
   const router = useRouter();
   const { type, date } = useLocalSearchParams<{ type: string; date: string }>();
+  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
   
   // 뒤로가기 핸들러
   const handleGoBack = () => {
     router.back();
   };
   
-  // 저장 버튼 핸들러
-  const handleSave = () => {
-    console.log('식사 기록 저장');
-    router.back();
+  // 바텀 시트 열기
+  const openBottomSheet = () => {
+    setIsBottomSheetVisible(true);
+  };
+  
+  // 바텀 시트 닫기
+  const closeBottomSheet = () => {
+    setIsBottomSheetVisible(false);
+  };
+  
+  // 음식 추가 핸들러
+  const handleAddFood = (foodData: any) => {
+    console.log('음식 추가:', foodData);
+    // 여기에 음식 추가 로직 구현
   };
   
   // 타입에 따른 제목 설정
@@ -71,12 +83,19 @@ export default function MealDetailScreen() {
       <View className="absolute bottom-8 right-8">
         <TouchableOpacity 
           className="bg-purple-500 w-15 h-15 rounded-full justify-center items-center shadow-lg"
-          style={{ width: 60, height: 60 }} // Tailwind에서 w-15, h-15가 없어서 style 속성으로 추가
-          onPress={handleSave}
+          style={{ width: 60, height: 60 }}
+          onPress={openBottomSheet}
         >
-          <Text className="text-white font-bold">버튼</Text>
+          <Text className="text-white font-bold">+</Text>
         </TouchableOpacity>
       </View>
+      
+      {/* 바텀 시트 */}
+      <FoodBottomSheet 
+        isVisible={isBottomSheetVisible}
+        onClose={closeBottomSheet}
+        onAdd={handleAddFood}
+      />
     </View>
   );
 } 
