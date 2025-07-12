@@ -1,13 +1,19 @@
 import React from 'react';
 import { Text, View } from 'react-native';
+import {useSignUpStore} from "@/stores/signup/SignupStore";
 import InputWithClearButton from '../common/InputWithClearButton';
 
+// props 인터페이스는 더 이상 필요 없음
+// 하지만 기존 코드와의 호환성을 위해 일단 유지
 interface NicknameStepProps {
-  nickname: string;
-  setNickname: (text: string) => void;
+  nickname?: string;
+  setNickname?: (text: string) => void;
 }
 
-const NicknameStep = ({ nickname, setNickname }: NicknameStepProps) => {
+const NicknameStep = ({ }: NicknameStepProps) => {
+  // Zustand 스토어에서 상태와 액션 가져오기
+  const { nickname, setNickname } = useSignUpStore();
+
   return (
     <View className="w-full">
       <Text className="text-3xl font-bold text-center mb-6 mt-10">
@@ -24,4 +30,4 @@ const NicknameStep = ({ nickname, setNickname }: NicknameStepProps) => {
   );
 };
 
-export default NicknameStep; 
+export default NicknameStep;
