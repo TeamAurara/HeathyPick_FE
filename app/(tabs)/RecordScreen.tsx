@@ -1,6 +1,7 @@
 import CalendarIcon from '@/components/ui/CalendarIcon';
 import MealCard from '@/components/ui/MealCard';
 import SupplementCard from '@/components/ui/SupplementCard';
+import WaterInputModal from '@/components/ui/WaterInputModal';
 import WeightCard from '@/components/ui/WeightCard';
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from 'react';
@@ -135,6 +136,7 @@ export default function RecordScreen() {
   const [mealData, setMealData] = useState<any>(null);
   const [supplementData, setSupplementData] = useState<any[]>([]);
   const [weightData, setWeightData] = useState<any>(null);
+  const [isWaterModalVisible, setIsWaterModalVisible] = useState(false);
   
   // 날짜가 변경될 때마다 해당 날짜의 데이터를 불러옴
   useEffect(() => {
@@ -190,6 +192,12 @@ export default function RecordScreen() {
   const handleMealCardPress = (mealType: string) => {
     console.log(`${mealType} 카드가 클릭되었습니다. 날짜: ${formatDateKey(currentDate)}`);
     
+    // 물 섭취 카드를 클릭한 경우 모달 표시
+    if (mealType === '물 섭취') {
+      setIsWaterModalVisible(true);
+      return;
+    }
+    
     // 식사 타입에 따른 라우팅
     let type = '';
     switch(mealType) {
@@ -201,9 +209,6 @@ export default function RecordScreen() {
         break;
       case '저녁':
         type = 'dinner';
-        break;
-      case '물 섭취':
-        type = 'water';
         break;
     }
     
@@ -227,6 +232,40 @@ export default function RecordScreen() {
   const handleWeightCardPress = () => {
     console.log(`체중 카드가 클릭되었습니다. 날짜: ${formatDateKey(currentDate)}`);
     // 체중 기록 상세 페이지로 이동하거나 체중 입력 모달 표시 등의 기능 구현 가능
+  };
+
+  // 물 섭취량 저장 핸들러
+  const handleSaveWaterAmount = (amount: number) => {
+    console.log(`물 섭취량 ${amount}L 저장, 날짜: ${formatDateKey(currentDate)}`);
+    
+    // 현재 날짜의 데이터 복사
+    const dateKey = formatDateKey(currentDate);
+    const updatedMealData = { ...mockMealData };
+    
+    if (!updatedMealData[dateKey]) {
+      updatedMealData[dateKey] = {
+        breakfast: { description: '-', currentValue: 0, maxValue: 500 },
+        lunch: { description: '-', currentValue: 0, maxValue: 500 },
+        dinner: { description: '-', currentValue: 0, maxValue: 500 },
+        water: { description: '-', currentValue: 0, maxValue: 200 }
+      };
+    }
+    
+    // 물 섭취 데이터 업데이트
+    const waterValue = Math.min(Math.round(amount * 100), 200); // 0.1L = 10, 최대 200
+    updatedMealData[dateKey].water = {
+      description: `${amount}L`,
+      currentValue: waterValue,
+      maxValue: 200
+    };
+    
+    // 데이터 업데이트
+    setMealData(updatedMealData[dateKey]);
+    
+    // 실제 앱에서는 API를 통해 서버에 저장할 수 있습니다
+    // saveWaterData(dateKey, amount).then(() => {
+    //   fetchMealData(dateKey).then(data => setMealData(data));
+    // });
   };
 
   // 데이터가 로딩 중일 때 표시할 내용
@@ -353,6 +392,14 @@ export default function RecordScreen() {
         {/* 하단 여백 */}
         <View className="h-6" />
       </ScrollView>
+      
+      {/* 물 섭취량 입력 모달 */}
+      <WaterInputModal 
+        isVisible={isWaterModalVisible}
+        onClose={() => setIsWaterModalVisible(false)}
+        onSave={handleSaveWaterAmount}
+        currentAmount={mealData?.water?.description !== '-' ? parseFloat(mealData.water.description) : 0}
+      />
     </View>
   );
 }
