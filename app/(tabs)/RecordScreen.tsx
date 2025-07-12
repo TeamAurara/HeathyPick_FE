@@ -1,9 +1,9 @@
 import CustomCalendars from '@/components/record/CustomCalendars';
-import CalendarIcon from '@/components/ui/CalendarIcon';
-import MealCard from '@/components/ui/MealCard';
-import SupplementCard from '@/components/ui/SupplementCard';
-import WaterInputModal from '@/components/ui/WaterInputModal';
-import WeightCard from '@/components/ui/WeightCard';
+import { CalendarIcon } from '@/components/ui/CalendarIcon';
+import { MealCard } from '@/components/ui/MealCard';
+import { SupplementCard } from '@/components/ui/SupplementCard';
+import { WaterInputModal } from '@/components/ui/WaterInputModal';
+import { WeightCard } from '@/components/ui/WeightCard';
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
