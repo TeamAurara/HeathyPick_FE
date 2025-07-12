@@ -1,5 +1,19 @@
 import { create } from 'zustand';
 
+// 활동 레벨 매핑 (한글 -> 백엔드 코드)
+export const ACTIVITY_MAPPING: Record<string, string> = {
+  '격한 운동을 많이 해요': 'MOVE_HARD',
+  '잘 움직여요': 'MOVE_WELL',
+  '약한 운동을 많이 해요': 'MOVE_LESS',
+  '몸을 거의 움직이지 않아요': 'MOVE_NONE'
+};
+
+// 성별 매핑 (male/female -> 남자/여자)
+export const GENDER_MAPPING: Record<string, string> = {
+  'male': '남자',
+  'female': '여자'
+};
+
 // 회원가입 상태 인터페이스 정의
 interface SignUpState {
   // 사용자 기본 정보
@@ -143,15 +157,16 @@ export const useSignUpStore = create<SignUpState>((set, get) => ({
       targetWeight 
     } = get();
     
+    // 백엔드 요구사항에 맞게 데이터 형식 변환
     return {
       nickname,
-      gender,
+      gender: gender ? GENDER_MAPPING[gender] : null,
       age,
-      activityLevel,
-      ckdStage,
-      height,
-      weight,
-      targetWeight
+      activity: activityLevel ? ACTIVITY_MAPPING[activityLevel] : null,
+      height: height ? parseInt(height) : null,
+      weight: weight ? parseInt(weight) : null,
+      goalWeight: targetWeight ? parseInt(targetWeight) : null,
+      ckdLevel: ckdStage
     };
   }
 })); 

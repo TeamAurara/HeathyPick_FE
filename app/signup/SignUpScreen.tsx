@@ -1,14 +1,17 @@
 import { useSignUpStore } from '@/stores/signup/SignupStore';
 import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { StepIndicator } from './components/common/index';
 import { ActivityStep, AgeStep, BodyInfoStep, CKDStep, GenderStep, NicknameStep, SuccessStep } from './components/steps/index';
 
 export default function SignUpScreen() {
+  const BaseUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   
   // Zustand 스토어에서 상태와 액션 가져오기
   const {
@@ -22,7 +25,8 @@ export default function SignUpScreen() {
     prevStep,
     nextStep,
     isCurrentStepValid,
-    completeSignUp
+    completeSignUp,
+    getSignUpData
   } = useSignUpStore();
   
   const totalSteps = 6; // 총 단계 수
@@ -40,15 +44,35 @@ export default function SignUpScreen() {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < totalSteps) {
       nextStep();
     } else {
       // 모든 단계 완료 후 성공 화면으로 전환
-      // 여기에서 API 호출을 추가할 수 있습니다
-      // const userData = getSignUpData();
-      // await api.signup(userData);
-      completeSignUp();
+      try {
+        setIsLoading(true);
+        
+        // 회원가입 데이터 가져오기
+        const userData = getSignUpData();
+        console.log('회원가입 데이터:', userData);
+        
+        // 백엔드 API 호출
+        const response = await axios.post(`${BaseUrl}/api/v1/users/signup`, userData);
+        console.log('백엔드 응답:', response.data);
+        console.log('백엔드 응답:', response.data.data);
+        
+        // 성공적으로 회원가입이 완료되면 완료 화면으로 전환
+        completeSignUp();
+      } catch (error) {
+        console.error('회원가입 오류:', error);
+        Alert.alert(
+          '회원가입 실패',
+          '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.',
+          [{ text: '확인' }]
+        );
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -87,7 +111,7 @@ export default function SignUpScreen() {
   // 마지막 단계에서 버튼 텍스트 변경
   const getButtonText = () => {
     if (currentStep === totalSteps) {
-      return '목표 설정 완료';
+      return isLoading ? '처리 중...' : '목표 설정 완료';
     }
     return '다음';
   };
@@ -124,10 +148,10 @@ export default function SignUpScreen() {
           <View className="px-6 pb-16 mt-4">
             <TouchableOpacity
               onPress={handleNext}
-              className={`w-full py-4 rounded-md items-center ${!isCurrentStepValid() ? 'bg-gray-100' : 'bg-green-500'}`}
-              disabled={!isCurrentStepValid()}
+              className={`w-full py-4 rounded-md items-center ${!isCurrentStepValid() || isLoading ? 'bg-gray-100' : 'bg-green-500'}`}
+              disabled={!isCurrentStepValid() || isLoading}
             >
-              <Text className={`text-base font-medium ${!isCurrentStepValid() ? 'text-gray-400' : 'text-white'}`}>
+              <Text className={`text-base font-medium ${!isCurrentStepValid() || isLoading ? 'text-gray-400' : 'text-white'}`}>
                 {getButtonText()}
               </Text>
             </TouchableOpacity>
