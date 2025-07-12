@@ -1,6 +1,6 @@
 import CalendarIcon from '@/components/ui/CalendarIcon';
 import MealCard from '@/components/ui/MealCard';
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
@@ -88,6 +88,7 @@ const mockMealData = {
 };
 
 export default function RecordScreen() {
+  const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [mealData, setMealData] = useState<any>(null);
   
@@ -133,7 +134,32 @@ export default function RecordScreen() {
   // 각 카드 클릭 핸들러
   const handleMealCardPress = (mealType: string) => {
     console.log(`${mealType} 카드가 클릭되었습니다. 날짜: ${formatDateKey(currentDate)}`);
-    // 여기에 식사 기록 추가/수정 화면으로 이동하는 로직 추가
+    
+    // 식사 타입에 따른 라우팅
+    let type = '';
+    switch(mealType) {
+      case '아침':
+        type = 'breakfast';
+        break;
+      case '점심':
+        type = 'lunch';
+        break;
+      case '저녁':
+        type = 'dinner';
+        break;
+      case '물 섭취':
+        type = 'water';
+        break;
+    }
+    
+    // 식사 상세 페이지로 이동
+    router.push({
+      pathname: '/meal/MealDetailScreen',
+      params: {
+        type,
+        date: formatDateKey(currentDate)
+      }
+    });
   };
 
   // 데이터가 로딩 중일 때 표시할 내용
