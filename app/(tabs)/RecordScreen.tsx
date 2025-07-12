@@ -1,10 +1,113 @@
 import CalendarIcon from '@/components/ui/CalendarIcon';
+import MealCard from '@/components/ui/MealCard';
 import { Stack } from "expo-router";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+
+// 날짜 형식을 YYYY-MM-DD 문자열로 변환하는 함수
+const formatDateKey = (date: Date): string => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+// 임시 데이터 - 실제로는 API에서 가져오거나 상태 관리 라이브러리에서 관리할 수 있습니다
+const mockMealData = {
+  // 오늘 날짜
+  [formatDateKey(new Date())]: {
+    breakfast: {
+      description: '빵, 토마토, 치즈',
+      currentValue: 350,
+      maxValue: 500,
+      kcal: 300,
+    },
+    lunch: {
+      description: '스파게티',
+      currentValue: 500,
+      maxValue: 500,
+      kcal: 800,
+    },
+    dinner: {
+      description: '-',
+      currentValue: 25,
+      maxValue: 500,
+    },
+    water: {
+      description: '-',
+      currentValue: 10,
+      maxValue: 200,
+    }
+  },
+  // 어제 날짜
+  [formatDateKey(new Date(new Date().setDate(new Date().getDate() - 1)))]: {
+    breakfast: {
+      description: '샐러드, 계란',
+      currentValue: 250,
+      maxValue: 500,
+      kcal: 200,
+    },
+    lunch: {
+      description: '불고기 덮밥',
+      currentValue: 450,
+      maxValue: 500,
+      kcal: 650,
+    },
+    dinner: {
+      description: '닭가슴살',
+      currentValue: 300,
+      maxValue: 500,
+      kcal: 350,
+    },
+    water: {
+      description: '2L',
+      currentValue: 180,
+      maxValue: 200,
+    }
+  },
+  // 내일 날짜 (빈 데이터)
+  [formatDateKey(new Date(new Date().setDate(new Date().getDate() + 1)))]: {
+    breakfast: {
+      description: '-',
+      currentValue: 0,
+      maxValue: 500,
+    },
+    lunch: {
+      description: '-',
+      currentValue: 0,
+      maxValue: 500,
+    },
+    dinner: {
+      description: '-',
+      currentValue: 0,
+      maxValue: 500,
+    },
+    water: {
+      description: '-',
+      currentValue: 0,
+      maxValue: 200,
+    }
+  }
+};
 
 export default function RecordScreen() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [mealData, setMealData] = useState<any>(null);
+  
+  // 날짜가 변경될 때마다 해당 날짜의 식사 데이터를 불러옴
+  useEffect(() => {
+    const dateKey = formatDateKey(currentDate);
+    
+    // 해당 날짜의 데이터가 있으면 불러오고, 없으면 빈 데이터 생성
+    const data = mockMealData[dateKey] || {
+      breakfast: { description: '-', currentValue: 0, maxValue: 500 },
+      lunch: { description: '-', currentValue: 0, maxValue: 500 },
+      dinner: { description: '-', currentValue: 0, maxValue: 500 },
+      water: { description: '-', currentValue: 0, maxValue: 200 }
+    };
+    
+    setMealData(data);
+    
+    // 실제 앱에서는 여기서 API 호출을 통해 해당 날짜의 데이터를 가져올 수 있습니다
+    // fetchMealData(dateKey).then(data => setMealData(data));
+  }, [currentDate]);
   
   // 날짜 포맷팅 함수
   const formatDate = (date: Date) => {
@@ -26,6 +129,21 @@ export default function RecordScreen() {
     newDate.setDate(currentDate.getDate() + 1);
     setCurrentDate(newDate);
   };
+
+  // 각 카드 클릭 핸들러
+  const handleMealCardPress = (mealType: string) => {
+    console.log(`${mealType} 카드가 클릭되었습니다. 날짜: ${formatDateKey(currentDate)}`);
+    // 여기에 식사 기록 추가/수정 화면으로 이동하는 로직 추가
+  };
+
+  // 데이터가 로딩 중일 때 표시할 내용
+  if (!mealData) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text>로딩 중...</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-white">
@@ -61,76 +179,47 @@ export default function RecordScreen() {
       
       {/* 메인 콘텐츠 영역 */}
       <View className="flex-1 p-4">
-        {/* 여기에 식사 기록 카드 등을 추가할 수 있습니다 */}
         <View className="flex-row flex-wrap justify-between">
           {/* 아침 카드 */}
-          <View className="w-[48%] bg-white rounded-lg p-4 mb-4 shadow-md border border-gray-100">
-            <View className="flex-row justify-between items-center">
-              <Text className="text-2xl font-bold">아침</Text>
-              <TouchableOpacity>
-                <Text className="text-gray-400 text-2xl">&gt;</Text>
-              </TouchableOpacity>
-            </View>
-            <Text className="text-gray-500 mt-1">빵, 토마토, 치즈</Text>
-            <View className="h-2 bg-gray-100 rounded-full mt-3">
-              <View className="h-2 bg-green-400 rounded-full w-[70%]" />
-            </View>
-            <View className="flex-row justify-end mt-1">
-              <Text className="text-gray-400">500</Text>
-            </View>
-            <Text className="text-green-500 text-3xl font-bold mt-4">300<Text className="text-gray-300 text-xl">kcal</Text></Text>
-          </View>
+          <MealCard 
+            title="아침" 
+            description={mealData.breakfast.description}
+            currentValue={mealData.breakfast.currentValue}
+            maxValue={mealData.breakfast.maxValue}
+            kcal={mealData.breakfast.kcal}
+            progressColor="bg-green-400"
+            onPress={() => handleMealCardPress('아침')}
+          />
           
           {/* 점심 카드 */}
-          <View className="w-[48%] bg-white rounded-lg p-4 mb-4 shadow-md border border-gray-100">
-            <View className="flex-row justify-between items-center">
-              <Text className="text-2xl font-bold">점심</Text>
-              <TouchableOpacity>
-                <Text className="text-gray-400 text-2xl">&gt;</Text>
-              </TouchableOpacity>
-            </View>
-            <Text className="text-gray-500 mt-1">스파게티</Text>
-            <View className="h-2 bg-gray-100 rounded-full mt-3">
-              <View className="h-2 bg-red-400 rounded-full w-full" />
-            </View>
-            <View className="flex-row justify-end mt-1">
-              <Text className="text-gray-400">500</Text>
-            </View>
-            <Text className="text-red-500 text-3xl font-bold mt-4">800<Text className="text-gray-300 text-xl">kcal</Text></Text>
-          </View>
+          <MealCard 
+            title="점심" 
+            description={mealData.lunch.description}
+            currentValue={mealData.lunch.currentValue}
+            maxValue={mealData.lunch.maxValue}
+            kcal={mealData.lunch.kcal}
+            progressColor={mealData.lunch.currentValue >= mealData.lunch.maxValue ? "bg-red-400" : "bg-green-400"}
+            onPress={() => handleMealCardPress('점심')}
+          />
           
           {/* 저녁 카드 */}
-          <View className="w-[48%] bg-white rounded-lg p-4 mb-4 shadow-md border border-gray-100">
-            <View className="flex-row justify-between items-center">
-              <Text className="text-2xl font-bold">저녁</Text>
-              <TouchableOpacity>
-                <Text className="text-gray-400 text-2xl">+</Text>
-              </TouchableOpacity>
-            </View>
-            <Text className="text-gray-500 mt-1">-</Text>
-            <View className="h-2 bg-gray-100 rounded-full mt-3">
-              <View className="h-2 bg-green-400 rounded-full w-[5%]" />
-            </View>
-            <View className="flex-row justify-end mt-1">
-              <Text className="text-gray-400">500</Text>
-            </View>
-          </View>
+          <MealCard 
+            title="저녁" 
+            description={mealData.dinner.description}
+            currentValue={mealData.dinner.currentValue}
+            maxValue={mealData.dinner.maxValue}
+            kcal={mealData.dinner.kcal}
+            onPress={() => handleMealCardPress('저녁')}
+          />
           
           {/* 물 섭취 카드 */}
-          <View className="w-[48%] bg-white rounded-lg p-4 mb-4 shadow-md border border-gray-100">
-            <View className="flex-row justify-between items-center">
-              <Text className="text-2xl font-bold">물 섭취</Text>
-              <TouchableOpacity>
-                <Text className="text-gray-400 text-2xl">+</Text>
-              </TouchableOpacity>
-            </View>
-            <View className="h-2 bg-gray-100 rounded-full mt-3">
-              <View className="h-2 bg-green-400 rounded-full w-[5%]" />
-            </View>
-            <View className="flex-row justify-end mt-1">
-              <Text className="text-gray-400">200</Text>
-            </View>
-          </View>
+          <MealCard 
+            title="물 섭취" 
+            description={mealData.water.description}
+            currentValue={mealData.water.currentValue}
+            maxValue={mealData.water.maxValue}
+            onPress={() => handleMealCardPress('물 섭취')}
+          />
         </View>
       </View>
     </View>
