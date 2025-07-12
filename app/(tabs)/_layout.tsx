@@ -1,5 +1,4 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
@@ -7,7 +6,7 @@ import "../../global.css";
 
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+
   const activeIconColor = '#22c55e'; // green-500 색상
 
   return (
