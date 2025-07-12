@@ -29,6 +29,11 @@ export default function KakaoScreen() {
     // 카카오 로그인 페이지 URL 생성
     const kakaoURL = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoOpt.clientId}&redirect_uri=${kakaoOpt.redirectUri}&response_type=code`;
 
+    // 메인 페이지로 이동하는 함수
+    const goToMainPage = () => {
+        router.replace("/(tabs)/ReportScreen");
+    };
+
     // 인증 코드로 토큰 요청
     const getTokenWithCode = async (code: string) => {
         try {
@@ -258,6 +263,16 @@ export default function KakaoScreen() {
                     >
                         <Text className="text-gray-700 text-base font-medium">
                             회원가입 바로가기
+                        </Text>
+                    </TouchableOpacity>
+
+                    {/* 메인 페이지로 바로 이동하는 임시 버튼 */}
+                    <TouchableOpacity
+                        onPress={goToMainPage}
+                        className="mt-4 py-4 px-4 rounded-md flex-row items-center justify-center w-full bg-blue-500"
+                    >
+                        <Text className="text-white text-base font-medium">
+                            메인 페이지로 바로 이동 (임시)
                         </Text>
                     </TouchableOpacity>
                 </View>
