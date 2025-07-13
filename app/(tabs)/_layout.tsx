@@ -23,7 +23,7 @@ export default function TabLayout() {
         }),
       }}>
       <Tabs.Screen
-        name="ReportScreen"
+        name="HomeScreen"
         options={{
           title: '홈',
           headerTitle: '홈',
@@ -31,7 +31,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="RecommendScreen"
+        name="StatisticsScreen"
         options={{
           title: '통계',
           headerTitle: '통계',
