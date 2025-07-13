@@ -2,7 +2,7 @@ import { Stack } from "expo-router";
 import React from "react";
 import { Text, View } from "react-native";
 
-export default function ReportScreen() {
+export default function HomeScreen() {
   return (
     <>
       <Stack.Screen options={{ title: "홈", headerShown: false }} />

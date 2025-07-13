@@ -2,7 +2,7 @@ import { Stack } from "expo-router";
 import React from "react";
 import { Text, View } from "react-native";
 
-export default function RecommendScreen() {
+export default function StatisticsScreen() {
   return (
     <>
       <Stack.Screen options={{ title: "통계", headerShown: false }} />
