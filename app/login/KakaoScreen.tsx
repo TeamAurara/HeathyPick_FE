@@ -31,7 +31,7 @@ export default function KakaoScreen() {
 
     // 메인 페이지로 이동하는 함수
     const goToMainPage = () => {
-        router.replace("/(tabs)/ReportScreen");
+        router.replace("/(tabs)/HomeScreen");
     };
 
     // 인증 코드로 토큰 요청

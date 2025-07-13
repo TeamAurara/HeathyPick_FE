@@ -78,7 +78,7 @@ export default function SignUpScreen() {
 
   const handleMainButtonPress = () => {
     // 메인 화면으로 이동
-    router.replace('/(tabs)/ReportScreen');
+    router.replace('/(tabs)/HomeScreen');
   };
 
   const renderStepContent = () => {
