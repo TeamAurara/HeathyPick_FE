@@ -21,6 +21,8 @@ const MAPPING = {
   'pencil': 'edit',
   'person.fill': 'person',
   'chevron.right': 'chevron-right',
+    'chevron.left': 'chevron-left',
+  'magnifyingglass': 'search',
 } as IconMapping;
 
 /**

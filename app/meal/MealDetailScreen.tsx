@@ -1,33 +1,29 @@
-import FoodBottomSheet from '@/components/ui/FoodBottomSheet';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function MealDetailScreen() {
   const router = useRouter();
-  const { type, date } = useLocalSearchParams<{ type: string; date: string }>();
-  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
+  const params = useLocalSearchParams();
+  const type = params.type?.toString() || '';
+  const date = params.date?.toString() || '';
   
   // 뒤로가기 핸들러
   const handleGoBack = () => {
     router.back();
   };
   
-  // 바텀 시트 열기
-  const openBottomSheet = () => {
-    setIsBottomSheetVisible(true);
-  };
-  
-  // 바텀 시트 닫기
-  const closeBottomSheet = () => {
-    setIsBottomSheetVisible(false);
-  };
-  
-  // 음식 추가 핸들러
-  const handleAddFood = (foodData: any) => {
-    console.log('음식 추가:', foodData);
-    // 여기에 음식 추가 로직 구현
+  // 음식 추가 페이지로 이동
+  const goToAddFoodScreen = () => {
+    router.push({
+      pathname: "/meal/AddFoodScreen",
+      params: {
+        mealType: type,
+        mealDate: date
+      }
+    });
   };
   
   // 타입에 따른 제목 설정
@@ -51,51 +47,62 @@ export default function MealDetailScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       
       {/* 상단 헤더 */}
-      <View className="flex-row items-center pt-14 pb-4 px-5 bg-gray-200">
-        <TouchableOpacity onPress={handleGoBack} className="mr-4">
-          <Text className="text-2xl font-bold">&lt;</Text>
-        </TouchableOpacity>
-        <Text className="text-xl font-bold flex-1 text-center mr-8">{getTitle()}</Text>
+      <View className="pt-14 px-5 pb-2">
+        <View className="flex-row items-center">
+          <TouchableOpacity onPress={handleGoBack} className="p-1">
+            <IconSymbol name="chevron.left" size={24} color="black" />
+          </TouchableOpacity>
+          <Text className="text-xl font-bold flex-1 text-center">기록하기</Text>
+          <View style={{ width: 24 }} /> {/* 균형을 맞추기 위한 빈 공간 */}
+        </View>
       </View>
       
       {/* 검색창 */}
       <View className="px-5 py-3">
-        <View className="flex-row items-center bg-gray-100 rounded-lg px-4 py-3">
-          <IconSymbol name="house.fill" size={20} color="#999" />
+        <View className="flex-row items-center justify-between bg-gray-100 rounded-full px-4 py-2">
           <TextInput
-            className="flex-1 ml-3 text-base"
-            placeholder="오늘 먹은 음식을 기록해 보아요!"
+            className="flex-1 text-base text-gray-500"
+            placeholder="음식을 검색해보세요"
             placeholderTextColor="#999"
           />
+          <IconSymbol name="magnifyingglass" size={20} color="#999" />
         </View>
       </View>
       
-      {/* 중앙 더미 컴포넌트 */}
+      {/* 중앙 컨텐츠 - 이미지와 텍스트 */}
       <ScrollView className="flex-1">
-        <View className="flex-1 justify-center items-center bg-gray-200 mx-5 my-5 p-10 rounded-lg h-96">
-          <Text className="text-lg text-center leading-7">
-            오늘 먹은 음식을 기록해 보아요!
-          </Text>
+        <View className="flex-1 justify-center items-center px-5 py-10">
+          <View className="items-center">
+            <Text className="text-2xl font-bold text-center mb-2">
+              오늘 먹은 음식을
+            </Text>
+            <Text className="text-2xl font-bold text-center mb-10">
+              기록해 보아요!
+            </Text>
+            
+            {/* 캐릭터 이미지 */}
+            <View className="w-64 h-64 justify-center items-center">
+              <Image
+                source={require('../../assets/images/image 1595.png')}
+                style={{ width: '100%', height: '100%' }}
+                contentFit="contain"
+              />
+            </View>
+          </View>
         </View>
       </ScrollView>
       
-      {/* 하단 버튼 */}
-      <View className="absolute bottom-8 right-8">
+      {/* 하단 프로필 및 버튼 */}
+      <View className="px-6 py-4 absolute bottom-8 left-0 right-0">
         <TouchableOpacity 
-          className="bg-purple-500 w-15 h-15 rounded-full justify-center items-center shadow-lg"
-          style={{ width: 60, height: 60 }}
-          onPress={openBottomSheet}
+          className="bg-white border border-green-500 py-4 px-6 rounded-lg flex-row items-center justify-center w-full"
+          onPress={goToAddFoodScreen}
         >
-          <Text className="text-white font-bold">+</Text>
+          <Text className="text-green-500 font-medium text-lg text-center">
+            + 음식 추가하기
+          </Text>
         </TouchableOpacity>
       </View>
-      
-      {/* 바텀 시트 */}
-      <FoodBottomSheet 
-        isVisible={isBottomSheetVisible}
-        onClose={closeBottomSheet}
-        onAdd={handleAddFood}
-      />
     </View>
   );
 } 
