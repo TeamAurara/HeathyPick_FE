@@ -1,8 +1,9 @@
 import { useSignUpStore } from '@/stores/signup/SignupStore';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { StepIndicator } from './components/common/index';
@@ -12,6 +13,26 @@ export default function SignUpScreen() {
   const BaseUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  
+  // 컴포넌트 마운트 시 AsyncStorage에서 userId 가져오기
+  useEffect(() => {
+    const getUserId = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem('userId');
+        if (storedUserId) {
+          setUserId(storedUserId);
+          console.log('가져온 사용자 ID:', storedUserId);
+        } else {
+          console.warn('사용자 ID를 찾을 수 없습니다.');
+        }
+      } catch (error) {
+        console.error('사용자 ID 가져오기 오류:', error);
+      }
+    };
+    
+    getUserId();
+  }, []);
   
   // Zustand 스토어에서 상태와 액션 가져오기
   const {
@@ -56,10 +77,22 @@ export default function SignUpScreen() {
         const userData = getSignUpData();
         console.log('회원가입 데이터:', userData);
         
-        // 백엔드 API 호출
-        const response = await axios.post(`${BaseUrl}/api/v1/users/signup`, userData);
+        if (!userId) {
+          throw new Error('사용자 ID를 찾을 수 없습니다.');
+        }
+        
+        // 백엔드 API 호출 - 온보딩 정보 저장
+        const response = await axios.post(
+          `${BaseUrl}/api/users/${userId}/onboarding`, 
+          userData,
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
         console.log('백엔드 응답:', response.data);
-        console.log('백엔드 응답:', response.data.data);
         
         // 성공적으로 회원가입이 완료되면 완료 화면으로 전환
         completeSignUp();
