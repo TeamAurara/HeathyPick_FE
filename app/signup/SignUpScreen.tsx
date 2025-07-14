@@ -23,6 +23,10 @@ export default function SignUpScreen() {
         if (storedUserId) {
           setUserId(storedUserId);
           console.log('가져온 사용자 ID:', storedUserId);
+          
+          // BaseUrl과 API 경로 출력
+          console.log('BaseUrl:', BaseUrl);
+          console.log('전체 API URL:', `${BaseUrl}/users/${storedUserId}/onboarding`);
         } else {
           console.warn('사용자 ID를 찾을 수 없습니다.');
         }
@@ -32,7 +36,7 @@ export default function SignUpScreen() {
     };
     
     getUserId();
-  }, []);
+  }, [BaseUrl]);
   
   // Zustand 스토어에서 상태와 액션 가져오기
   const {
@@ -81,15 +85,14 @@ export default function SignUpScreen() {
           throw new Error('사용자 ID를 찾을 수 없습니다.');
         }
         
+        // API URL 출력
+        const apiUrl = `${BaseUrl}/users/${userId}/onboarding`;
+        console.log('요청 URL:', apiUrl);
+        
         // 백엔드 API 호출 - 온보딩 정보 저장
         const response = await axios.post(
-          `${BaseUrl}/api/users/${userId}/onboarding`, 
-          userData,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
+          apiUrl, 
+          userData
         );
         
         console.log('백엔드 응답:', response.data);
