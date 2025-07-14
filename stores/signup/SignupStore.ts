@@ -160,12 +160,12 @@ export const useSignUpStore = create<SignUpState>((set, get) => ({
     // 백엔드 요구사항에 맞게 데이터 형식 변환
     return {
       nickname,
-      gender: gender ? GENDER_MAPPING[gender] : null,
-      age,
+      gender: gender === 'male' ? '남자' : gender === 'female' ? '여자' : null,
+      age: age || 0,
       activity: activityLevel ? ACTIVITY_MAPPING[activityLevel] : null,
-      height: height ? parseInt(height) : null,
-      weight: weight ? parseInt(weight) : null,
-      goalWeight: targetWeight ? parseInt(targetWeight) : null,
+      height: height ? parseInt(height) : 0,
+      weight: weight ? parseInt(weight) : 0,
+      goalWeight: targetWeight ? parseInt(targetWeight) : 0,
       ckdLevel: ckdStage
     };
   }
