@@ -1,8 +1,9 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useMealStore } from '../../stores/mealStore';
 
 // 네비게이션 헤더 숨기기
 export const options = {
@@ -11,9 +12,6 @@ export const options = {
 
 export default function AddFoodScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams();
-  const mealType = params.mealType?.toString() || '';
-  const mealDate = params.mealDate?.toString() || '';
 
   const [foodName, setFoodName] = useState('');
   const [calories, setCalories] = useState('');
@@ -21,12 +19,15 @@ export default function AddFoodScreen() {
   const [protein, setProtein] = useState('');
   const [fat, setFat] = useState('');
 
+  const addMealData = useMealStore((state) => state.addMealData);
+
   const handleGoBack = () => {
     router.back();
   };
 
   const handleAddFood = () => {
     const newFoodData = { name: foodName, calories, carbs, protein, fat };
+    addMealData(newFoodData);
     console.log('음식 추가:', newFoodData);
     router.back();
   };

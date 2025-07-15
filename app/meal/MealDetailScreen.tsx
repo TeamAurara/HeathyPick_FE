@@ -88,12 +88,24 @@ export default function MealDetailScreen() {
         ) : (
           <View className="px-5 py-10">
             {mealData.map((meal: MealDataType, idx: number) => (
-              <View key={idx} className="mb-4 p-4 bg-gray-100 rounded-lg">
-                <Text className="text-lg font-bold">{meal.name}</Text>
-                <Text className="mt-1">칼로리: {meal.calories} kcal</Text>
-                <Text>탄수화물: {meal.carbs} g</Text>
-                <Text>단백질: {meal.protein} g</Text>
-                <Text>지방: {meal.fat} g</Text>
+              <View key={idx} className="mb-4 p-4 bg-green-50 border border-green-500 shadow-md rounded-lg">
+                <Text className="text-lg font-bold mb-2 text-green-600">{meal.name}</Text>
+                <View className="flex-row items-center mb-1">
+                  <IconSymbol name="flame" size={16} color="green" />
+                  <Text className="text-sm text-gray-700 ml-2">칼로리: {meal.calories} kcal</Text>
+                </View>
+                <View className="flex-row items-center mb-1">
+                  <IconSymbol name="leaf" size={16} color="green" />
+                  <Text className="text-sm text-gray-700 ml-2">탄수화물: {meal.carbs} g</Text>
+                </View>
+                <View className="flex-row items-center mb-1">
+                  <IconSymbol name="fork.knife" size={16} color="green" />
+                  <Text className="text-sm text-gray-700 ml-2">단백질: {meal.protein} g</Text>
+                </View>
+                <View className="flex-row items-center">
+                  <IconSymbol name="drop" size={16} color="green" />
+                  <Text className="text-sm text-gray-700 ml-2">지방: {meal.fat} g</Text>
+                </View>
               </View>
             ))}
           </View>
