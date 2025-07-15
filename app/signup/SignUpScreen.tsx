@@ -8,7 +8,11 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { StepIndicator } from './components/common/index';
 import { ActivityStep, AgeStep, BodyInfoStep, CKDStep, GenderStep, NicknameStep, SuccessStep } from './components/steps/index';
 
-export default function SignUpScreen() {
+interface SignUpScreenProps {
+  onOnboardingComplete?: () => void;
+}
+
+export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps) {
   const BaseUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -78,7 +82,8 @@ export default function SignUpScreen() {
 
   const handleMainButtonPress = () => {
     // 메인 화면으로 이동
-    router.replace('/(tabs)/HomeScreen');
+    if (onOnboardingComplete) onOnboardingComplete();
+    else router.replace('/HomeScreen');
   };
 
   const renderStepContent = () => {

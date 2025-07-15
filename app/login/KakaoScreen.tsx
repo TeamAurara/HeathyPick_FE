@@ -11,7 +11,11 @@ interface KakaoOptions {
     redirectUri: string;
   }
 
-export default function KakaoScreen() {
+interface KakaoScreenProps {
+  onLoginSuccess?: () => void;
+}
+
+export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
     const router = useRouter();
     const [showWebView, setShowWebView] = useState(false);
     const [errorInfo, setErrorInfo] = useState<string | null>(null);
@@ -134,7 +138,9 @@ export default function KakaoScreen() {
                             [
                                 {
                                     text: "확인",
-                                    onPress: () => router.push("../signup/SignUpScreen")
+                                    onPress: () => {
+                                        router.push("../signup/SignUpScreen");
+                                    }
                                 }
                             ]
                         );
@@ -255,36 +261,8 @@ export default function KakaoScreen() {
                             카카오로 1초만에 시작하기
                         </Text>
                     </TouchableOpacity>
-
-                    {/* 회원가입으로 바로 넘어가는 버튼 */}
-                    <TouchableOpacity
-                        onPress={() => router.push("../signup/SignUpScreen")}
-                        className="mt-4 py-4 px-4 rounded-md flex-row items-center justify-center w-full border border-gray-300"
-                    >
-                        <Text className="text-gray-700 text-base font-medium">
-                            회원가입 바로가기
-                        </Text>
-                    </TouchableOpacity>
-
-                    {/* 메인 페이지로 바로 이동하는 임시 버튼 */}
-                    <TouchableOpacity
-                        onPress={goToMainPage}
-                        className="mt-4 py-4 px-4 rounded-md flex-row items-center justify-center w-full bg-blue-500"
-                    >
-                        <Text className="text-white text-base font-medium">
-                            메인 페이지로 바로 이동 (임시)
-                        </Text>
-                    </TouchableOpacity>
                 </View>
             </View>
-
-            {errorInfo && (
-                <View className="px-6 pb-4">
-                    <View className="p-4 bg-red-200 rounded-lg">
-                        <Text className="text-red-800 text-xs">{errorInfo}</Text>
-                    </View>
-                </View>
-            )}
         </SafeAreaView>
     );
 }
