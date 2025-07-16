@@ -10,6 +10,12 @@ export default function MealLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="AddFoodScreen"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 } 

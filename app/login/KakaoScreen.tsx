@@ -261,6 +261,15 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
                             카카오로 1초만에 시작하기
                         </Text>
                     </TouchableOpacity>
+                    
+                    {/* <TouchableOpacity
+                        onPress={goToMainPage}
+                        className="bg-green-500 py-4 px-4 rounded-md flex-row items-center justify-center w-full mt-4"
+                    >
+                        <Text className="text-white text-base font-medium">
+                            로그인 없이 시작하기
+                        </Text>
+                    </TouchableOpacity> */}
                 </View>
             </View>
         </SafeAreaView>
