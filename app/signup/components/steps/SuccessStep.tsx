@@ -1,6 +1,7 @@
+import { useSignUpStore } from "@/stores/signup/SignupStore";
+import { Image } from 'expo-image';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import {useSignUpStore} from "@/stores/signup/SignupStore";
 
 interface SuccessStepProps {
   nickname?: string;
@@ -26,10 +27,12 @@ const SuccessStep = ({ onMainButtonPress }: SuccessStepProps) => {
 
       {/* 중앙 이미지와 텍스트 */}
       <View className="flex-1 w-full flex-grow justify-center items-center my-8">
-        <View className="aspect-square w-4/5 bg-green-400 rounded-lg justify-center items-center">
-          <Text className="text-2xl text-center text-black font-bold">
-            캐릭터 이미지
-          </Text>
+        <View className="aspect-square w-4/5 rounded-lg justify-center items-center">
+          <Image
+            source={require('../../../../assets/images/image 1595.png')}
+            style={{ width: '100%', height: '100%' }}
+            contentFit="contain"
+          />
         </View>
 
         <Text className="text-xl text-center font-medium mt-4">
