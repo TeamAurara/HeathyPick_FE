@@ -84,14 +84,16 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
         // 회원가입 데이터 가져오기
         const userData = getSignUpData();
         console.log('회원가입 데이터:', userData);
-        
+          // API URL 출력
+          const apiUrl = `${BaseUrl}/users/${userId}/onboarding`;
+          console.log('요청 URL:', apiUrl);
         if (!userId) {
           throw new Error('사용자 ID를 찾을 수 없습니다.');
         }
         
-        // API URL 출력
-        const apiUrl = `${BaseUrl}/users/${userId}/onboarding`;
-        console.log('요청 URL:', apiUrl);
+        // // API URL 출력
+        // const apiUrl = `${BaseUrl}/users/${userId}/onboarding`;
+        // console.log('요청 URL:', apiUrl);
         
         // 백엔드 API 호출 - 온보딩 정보 저장
         const response = await axios.post(

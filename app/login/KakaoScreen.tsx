@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios, { isAxiosError } from "axios";
 import { useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
@@ -9,10 +10,34 @@ import KakaoLogo from "../../components/ui/KakaoLogo";
 interface KakaoOptions {
     clientId: string;
     redirectUri: string;
-  }
+}
 
 interface KakaoScreenProps {
-  onLoginSuccess?: () => void;
+    onLoginSuccess?: () => void;
+}
+
+// 백엔드 응답 타입 정의
+interface BackendResponse {
+    success: boolean;
+    code: string;
+    message: string;
+    data: {
+        token: {
+            accessToken: string;
+            refreshToken: string;
+            accessTokenExpiresIn: number;
+            refreshTokenExpiresIn: number;
+        };
+        user: {
+            userId: number;
+            email: string;
+            nickname: string;
+            profileImageUrl: string;
+            gender: string;
+            age: number;
+            isOnboarded: boolean;
+        };
+    };
 }
 
 export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
@@ -25,55 +50,41 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
     // 카카오 개발자 콘솔에 등록한 리다이렉트 URI
     const REDIRECT_URI = "http://127.0.0.1:8081/auth/kakao/callback";
 
-    const kakaoOpt:KakaoOptions  = {
-        clientId: process.env.EXPO_PUBLIC_REST_API || "", // 실제 REST API 키
+    const kakaoOpt: KakaoOptions = {
+        clientId: process.env.EXPO_PUBLIC_REST_API || "",
         redirectUri: REDIRECT_URI,
     };
 
-    // 카카오 로그인 페이지 URL 생성
     const kakaoURL = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoOpt.clientId}&redirect_uri=${kakaoOpt.redirectUri}&response_type=code`;
 
-    // 메인 페이지로 이동하는 함수
-    const goToMainPage = () => {
-        router.replace("/(tabs)/HomeScreen");
-    };
-
-    // 인증 코드로 토큰 요청
-    const getTokenWithCode = async (code: string) => {
+    // 백엔드에 카카오 인증 코드 전송
+    const sendCodeToBackend = async (code: string) => {
         try {
             setIsLoading(true);
-
-            // 토큰 요청 URL
-            const tokenUrl = "https://kauth.kakao.com/oauth/token";
-
-            // axios로 토큰 요청 (JSON 형태로 파라미터 전달)
-            const response = await axios.post(
-                tokenUrl,
-                null, // 본문 데이터 없음
-                {
-                    params: {
-                        grant_type: "authorization_code",
-                        client_id: kakaoOpt.clientId,
-                        redirect_uri: kakaoOpt.redirectUri,
-                        code: code
-                    },
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
-                    }
-                }
+            const backendUrl = "https://healthpick.store/api/auth/kakao";
+            console.log("백엔드 URL:", backendUrl);
+            const response = await axios.post<BackendResponse>(
+                backendUrl,
+                { code },
+                { headers: { 'Content-Type': 'application/json' } }
             );
 
-            console.log("토큰 응답:", JSON.stringify(response.data, null, 2));
+            console.log("백엔드 응답:", JSON.stringify(response.data, null, 2));
 
-            // 토큰 정보 추출
-            const { access_token, refresh_token, token_type } = response.data;
-            console.log("토큰 정보:", access_token, refresh_token, token_type);
-            // 사용자 정보 요청
-            await getUserInfo(access_token);
+            if (response.data.success) {
+                const { token, user } = response.data.data;
+                console.log("로그인 성공!");
+                console.log("토큰 정보:", token);
+                console.log("사용자 정보:", user);
+                return { success: true, userData: user, tokenData: token };
+            } else {
+                console.error("백엔드 에러:", response.data.message);
+                setErrorInfo(`백엔드 에러: ${response.data.message}`);
+                return { success: false };
+            }
 
-            return true;
         } catch (error) {
-            console.error("토큰 요청 에러:", error);
+            console.error("백엔드 요청 에러:", error);
             if (isAxiosError(error)) {
                 const errorMessage = `상태 코드: ${error.response?.status}, 메시지: ${error.message}, 데이터: ${JSON.stringify(error.response?.data)}`;
                 console.error(errorMessage);
@@ -81,31 +92,9 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
             } else {
                 setErrorInfo(String(error));
             }
-            return false;
+            return { success: false };
         } finally {
             setIsLoading(false);
-        }
-    };
-
-    // 사용자 정보 요청
-    const getUserInfo = async (accessToken: string) => {
-        try {
-            const userInfoUrl = "https://kapi.kakao.com/v2/user/me";
-            const response = await axios.get(userInfoUrl, {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Content-type': 'application/x-www-form-urlencoded;charset=utf-8'
-                }
-            });
-
-            console.log("사용자 정보:", JSON.stringify(response.data, null, 2));
-            return response.data;
-        } catch (error) {
-            console.error("사용자 정보 요청 에러:", error);
-            if (isAxiosError(error)) {
-                console.error(`상태 코드: ${error.response?.status}, 메시지: ${error.message}`);
-            }
-            throw error;
         }
     };
 
@@ -115,23 +104,27 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
         console.log("현재 URL:", url);
         console.log("네비게이션 상태:", JSON.stringify(navState, null, 2));
 
-        // 인증 코드가 포함된 리다이렉트 URL 확인
         if (url.includes("/auth/kakao/callback") && url.includes("code=")) {
-            // 인증 코드 추출
             const codeMatch = url.match(/code=([^&]+)/);
             if (codeMatch && codeMatch[1]) {
                 const code = codeMatch[1];
                 console.log("인증 코드:", code);
-
-                // 즉시 WebView 숨기기
                 setShowWebView(false);
 
                 try {
-                    // 인증 코드로 토큰 요청
-                    const success = await getTokenWithCode(code);
+                    const result = await sendCodeToBackend(code);
 
-                    if (success) {
-                        // 성공 알림 표시
+                    if (result.success) {
+                        const user = result.userData!;
+
+                        // AsyncStorage에 userId 저장
+                        try {
+                            await AsyncStorage.setItem('userId', user.userId.toString());
+                            console.log('userId가 AsyncStorage에 저장되었습니다:', user.userId);
+                        } catch (storageError) {
+                            console.error('AsyncStorage 저장 오류:', storageError);
+                        }
+
                         Alert.alert(
                             "로그인 성공",
                             "카카오 계정으로 로그인되었습니다.",
@@ -139,7 +132,12 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
                                 {
                                     text: "확인",
                                     onPress: () => {
-                                        router.push("../signup/SignUpScreen");
+                                        if (user.isOnboarded) {
+                                            router.replace("/(tabs)/HomeScreen");
+                                        } else {
+                                            router.push("../signup/SignUpScreen");
+                                        }
+                                        onLoginSuccess?.();
                                     }
                                 }
                             ]
@@ -147,7 +145,7 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
                     } else {
                         Alert.alert(
                             "로그인 실패",
-                            "토큰을 가져오는 데 실패했습니다.",
+                            "서버에서 로그인 처리에 실패했습니다.",
                             [
                                 { text: "다시 시도", onPress: () => setShowWebView(true) }
                             ]
@@ -164,11 +162,9 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
                     );
                 }
 
-                // 탐색 중지
                 return false;
             }
         }
-        // 계속 탐색
         return true;
     };
 
@@ -188,11 +184,9 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
         console.log("WebView 상세 에러:", errorDetails);
         setErrorInfo(errorDetails);
 
-        // 에러가 리다이렉트 URL에서 발생한 것이고 이미 인증 코드를 추출했다면 무시
         if (nativeEvent.url.includes("/auth/kakao/callback") && nativeEvent.description.includes("ERR_CONNECTION_REFUSED")) {
             console.log("예상된 리다이렉트 에러, 무시합니다.");
         } else {
-            // 다른 에러는 사용자에게 알림
             Alert.alert(
                 "로그인 오류",
                 `오류가 발생했습니다: ${nativeEvent.description}`,
@@ -218,7 +212,6 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
         );
     }
 
-    // WebView가 보이는 경우
     if (showWebView) {
         return (
             <>
@@ -243,7 +236,6 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
         );
     }
 
-    // 로그인 버튼 화면
     return (
         <SafeAreaView className="flex-1 bg-white">
             <View className="flex-1 justify-center items-center">
@@ -261,15 +253,6 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
                             카카오로 1초만에 시작하기
                         </Text>
                     </TouchableOpacity>
-                    
-                    {/* <TouchableOpacity
-                        onPress={goToMainPage}
-                        className="bg-green-500 py-4 px-4 rounded-md flex-row items-center justify-center w-full mt-4"
-                    >
-                        <Text className="text-white text-base font-medium">
-                            로그인 없이 시작하기
-                        </Text>
-                    </TouchableOpacity> */}
                 </View>
             </View>
         </SafeAreaView>

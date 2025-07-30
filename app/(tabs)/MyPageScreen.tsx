@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Alert, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -33,6 +34,29 @@ export default function MyPageScreen() {
         getUserData();
     }, []);
 
+    // 카카오 토큰 무효화
+    const revokeKakaoToken = async () => {
+        try {
+            const accessToken = await AsyncStorage.getItem('accessToken');
+            if (accessToken) {
+                // 카카오 토큰 무효화 API 호출
+                await axios.post(
+                    'https://kapi.kakao.com/v1/user/logout',
+                    {},
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`
+                        }
+                    }
+                );
+                console.log("카카오 토큰 무효화 완료");
+            }
+        } catch (error) {
+            console.error("카카오 토큰 무효화 실패:", error);
+            // 토큰 무효화 실패해도 로그아웃은 계속 진행
+        }
+    };
+
     // 로그아웃 처리 함수
     const handleLogout = async () => {
         try {
@@ -48,12 +72,26 @@ export default function MyPageScreen() {
                     {
                         text: "로그아웃",
                         onPress: async () => {
-                            // AsyncStorage에서 토큰과 사용자 정보 삭제
-                            await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'user', 'userId']);
-                            console.log("로그아웃 완료");
-                            
-                            // 로그인 화면으로 이동
-                            router.replace("/login/KakaoScreen");
+                            try {
+                                // 카카오 토큰 무효화
+                                await revokeKakaoToken();
+                                
+                                // AsyncStorage에서 모든 사용자 관련 데이터 삭제
+                                await AsyncStorage.multiRemove([
+                                    'accessToken', 
+                                    'user', 
+                                    'userId',
+                                    'refreshToken' // 혹시 모르니 추가
+                                ]);
+                                
+                                console.log("로그아웃 완료");
+                                
+                                // 로그인 화면으로 이동
+                                router.replace("/login/KakaoScreen");
+                            } catch (error) {
+                                console.error("로그아웃 처리 중 오류:", error);
+                                Alert.alert("오류", "로그아웃 처리 중 문제가 발생했습니다.");
+                            }
                         }
                     }
                 ]
