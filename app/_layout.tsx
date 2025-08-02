@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -6,6 +7,9 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import "react-native-reanimated";
 import "../global.css";
+
+// QueryClient 인스턴스 생성
+const queryClient = new QueryClient();
 
 const RootLayout = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -55,27 +59,29 @@ const RootLayout = () => {
   if (!loaded || isLoading) {
     // 폰트 로딩 또는 로그인 상태 확인 중
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#22c55e" />
-      </View>
+      <QueryClientProvider client={queryClient}>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#22c55e" />
+        </View>
+      </QueryClientProvider>
     );
   }
 
   // 로그인되지 않은 경우 로그인 화면으로 리디렉션
   if (!isLoggedIn) {
     return (
-      <>
+      <QueryClientProvider client={queryClient}>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="login/KakaoScreen" />
         </Stack>
         <StatusBar style="auto" />
-      </>
+      </QueryClientProvider>
     );
   }
 
   // 로그인된 경우 탭 네비게이션으로 이동
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen 
           name="(tabs)" 
@@ -88,7 +94,7 @@ const RootLayout = () => {
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
-    </>
+    </QueryClientProvider>
   );
 };
 
