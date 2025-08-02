@@ -34,26 +34,27 @@ export default function MyPageScreen() {
         getUserData();
     }, []);
 
-    // 카카오 토큰 무효화
-    const revokeKakaoToken = async () => {
+    // 백엔드 로그아웃 처리
+    const handleBackendLogout = async () => {
         try {
             const accessToken = await AsyncStorage.getItem('accessToken');
             if (accessToken) {
-                // 카카오 토큰 무효화 API 호출
+                // 백엔드 로그아웃 API 호출
                 await axios.post(
-                    'https://kapi.kakao.com/v1/user/logout',
+                    'https://healthpick.store/api/auth/logout',
                     {},
                     {
                         headers: {
-                            'Authorization': `Bearer ${accessToken}`
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
                         }
                     }
                 );
-                console.log("카카오 토큰 무효화 완료");
+                console.log("백엔드 로그아웃 완료");
             }
         } catch (error) {
-            console.error("카카오 토큰 무효화 실패:", error);
-            // 토큰 무효화 실패해도 로그아웃은 계속 진행
+            console.error("백엔드 로그아웃 실패:", error);
+            // 백엔드 로그아웃 실패해도 클라이언트 로그아웃은 계속 진행
         }
     };
 
@@ -73,15 +74,15 @@ export default function MyPageScreen() {
                         text: "로그아웃",
                         onPress: async () => {
                             try {
-                                // 카카오 토큰 무효화
-                                await revokeKakaoToken();
+                                // 백엔드 로그아웃 처리
+                                await handleBackendLogout();
                                 
                                 // AsyncStorage에서 모든 사용자 관련 데이터 삭제
                                 await AsyncStorage.multiRemove([
                                     'accessToken', 
                                     'user', 
                                     'userId',
-                                    'refreshToken' // 혹시 모르니 추가
+                                    'refreshToken'
                                 ]);
                                 
                                 console.log("로그아웃 완료");
