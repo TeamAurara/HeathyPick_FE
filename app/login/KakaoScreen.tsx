@@ -46,6 +46,10 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
     const [errorInfo, setErrorInfo] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const webViewRef = useRef<WebView>(null);
+    
+    // 중복 요청 방지를 위한 상태
+    const [isProcessingCode, setIsProcessingCode] = useState(false);
+    const [processedCodes] = useState(new Set<string>());
 
     // 카카오 개발자 콘솔에 등록한 리다이렉트 URI
     const REDIRECT_URI = "http://127.0.0.1:8081/auth/kakao/callback";
@@ -62,33 +66,51 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
         try {
             setIsLoading(true);
             const backendUrl = "https://healthpick.store/api/auth/kakao";
-            console.log("백엔드 URL:", backendUrl);
+            console.log("🌐 백엔드 요청 URL:", backendUrl);
+            console.log("📤 전송할 인증 코드:", code.substring(0, 10) + "...");
+            console.log("📋 요청 데이터:", { code });
+            
             const response = await axios.post<BackendResponse>(
                 backendUrl,
                 { code },
-                { headers: { 'Content-Type': 'application/json' } }
+                { 
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    timeout: 10000 // 10초 타임아웃
+                }
             );
 
-            console.log("백엔드 응답:", JSON.stringify(response.data, null, 2));
+            console.log("✅ 백엔드 응답 성공:", JSON.stringify(response.data, null, 2));
 
             if (response.data.success) {
                 const { token, user } = response.data.data;
-                console.log("로그인 성공!");
-                console.log("토큰 정보:", token);
-                console.log("사용자 정보:", user);
+                console.log("🎉 로그인 성공!");
+                console.log("🔑 토큰 정보:", token);
+                console.log("👤 사용자 정보:", user);
                 return { success: true, userData: user, tokenData: token };
             } else {
-                console.error("백엔드 에러:", response.data.message);
+                console.error("❌ 백엔드 에러:", response.data.message);
                 setErrorInfo(`백엔드 에러: ${response.data.message}`);
                 return { success: false };
             }
 
         } catch (error) {
-            console.error("백엔드 요청 에러:", error);
+            console.error("💥 백엔드 요청 에러:", error);
             if (isAxiosError(error)) {
                 const errorMessage = `상태 코드: ${error.response?.status}, 메시지: ${error.message}, 데이터: ${JSON.stringify(error.response?.data)}`;
-                console.error(errorMessage);
+                console.error("📊 상세 에러 정보:", errorMessage);
                 setErrorInfo(errorMessage);
+                
+                // 500 에러인 경우 추가 정보 제공
+                if (error.response?.status === 500) {
+                    console.error("🔧 500 에러 - 가능한 원인:");
+                    console.error("1. 백엔드 서버 내부 오류");
+                    console.error("2. 카카오 API 연동 문제");
+                    console.error("3. 데이터베이스 연결 문제");
+                    console.error("4. 인증 코드가 이미 사용됨");
+                }
             } else {
                 setErrorInfo(String(error));
             }
@@ -108,7 +130,21 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
             const codeMatch = url.match(/code=([^&]+)/);
             if (codeMatch && codeMatch[1]) {
                 const code = codeMatch[1];
-                console.log("인증 코드:", code);
+                console.log("🔍 인증 코드 감지:", code.substring(0, 10) + "...");
+                
+                // 중복 요청 방지
+                if (isProcessingCode) {
+                    console.log("⚠️ 이미 처리 중인 요청이 있습니다.");
+                    return false;
+                }
+                
+                if (processedCodes.has(code)) {
+                    console.log("⚠️ 이미 처리된 인증 코드입니다.");
+                    return false;
+                }
+                
+                setIsProcessingCode(true);
+                processedCodes.add(code);
                 setShowWebView(false);
 
                 try {
@@ -116,11 +152,36 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
 
                     if (result.success) {
                         const user = result.userData!;
+                        const token = result.tokenData!;
 
                         // AsyncStorage에 userId 저장
                         try {
                             await AsyncStorage.setItem('userId', user.userId.toString());
                             console.log('userId가 AsyncStorage에 저장되었습니다:', user.userId);
+                        } catch (storageError) {
+                            console.error('AsyncStorage 저장 오류:', storageError);
+                        }
+
+                        // 토큰과 사용자 정보를 AsyncStorage에 저장
+                        try {
+                            const storageItems: [string, string][] = [];
+                            
+                            // accessToken이 존재하는 경우에만 저장
+                            if (token.accessToken) {
+                                storageItems.push(['accessToken', token.accessToken]);
+                            }
+                            
+                            // refreshToken이 존재하는 경우에만 저장
+                            if (token.refreshToken) {
+                                storageItems.push(['refreshToken', token.refreshToken]);
+                            }
+                            
+                            // 사용자 정보 저장
+                            storageItems.push(['user', JSON.stringify(user)]);
+                            storageItems.push(['userId', user.userId.toString()]);
+                            
+                            await AsyncStorage.multiSet(storageItems);
+                            console.log('토큰과 사용자 정보가 AsyncStorage에 저장되었습니다');
                         } catch (storageError) {
                             console.error('AsyncStorage 저장 오류:', storageError);
                         }
@@ -160,6 +221,8 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
                             { text: "다시 시도", onPress: () => setShowWebView(true) }
                         ]
                     );
+                } finally {
+                    setIsProcessingCode(false);
                 }
 
                 return false;
@@ -200,6 +263,8 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
 
     const handleLogin = () => {
         setErrorInfo(null);
+        setIsProcessingCode(false);
+        processedCodes.clear();
         setShowWebView(true);
     };
 
@@ -220,7 +285,7 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
                     source={{ uri: kakaoURL }}
                     onNavigationStateChange={handleNavigationStateChange}
                     onError={handleError}
-                    incognito={true}
+                    // incognito={true}
                     javaScriptEnabled={true}
                     domStorageEnabled={true}
                     onHttpError={(e) => {
