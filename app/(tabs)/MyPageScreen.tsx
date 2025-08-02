@@ -5,11 +5,10 @@ import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Alert, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
-// Ionicons 타입을 위한 인터페이스 정의
 interface MenuItem {
     id: string;
     title: string;
-    icon: any; // Ionicons의 name 속성은 any 타입으로 처리
+    icon: any;
     action: () => void;
 }
 
@@ -17,7 +16,6 @@ export default function MyPageScreen() {
     const router = useRouter();
     const [userData, setUserData] = useState<{ nickname: string, email: string } | null>(null);
 
-    // 사용자 정보 불러오기
     useEffect(() => {
         const getUserData = async () => {
             try {
@@ -34,12 +32,10 @@ export default function MyPageScreen() {
         getUserData();
     }, []);
 
-    // 백엔드 로그아웃 처리
     const handleBackendLogout = async () => {
         try {
             const accessToken = await AsyncStorage.getItem('accessToken');
             if (accessToken) {
-                // 백엔드 로그아웃 API 호출
                 await axios.post(
                     'https://healthpick.store/api/auth/logout',
                     {},
@@ -54,14 +50,11 @@ export default function MyPageScreen() {
             }
         } catch (error) {
             console.error("백엔드 로그아웃 실패:", error);
-            // 백엔드 로그아웃 실패해도 클라이언트 로그아웃은 계속 진행
         }
     };
 
-    // 로그아웃 처리 함수
     const handleLogout = async () => {
         try {
-            // 확인 대화상자 표시
             Alert.alert(
                 "로그아웃",
                 "정말 로그아웃 하시겠습니까?",
@@ -74,10 +67,8 @@ export default function MyPageScreen() {
                         text: "로그아웃",
                         onPress: async () => {
                             try {
-                                // 백엔드 로그아웃 처리
                                 await handleBackendLogout();
                                 
-                                // AsyncStorage에서 모든 사용자 관련 데이터 삭제
                                 await AsyncStorage.multiRemove([
                                     'accessToken', 
                                     'user', 
@@ -87,7 +78,6 @@ export default function MyPageScreen() {
                                 
                                 console.log("로그아웃 완료");
                                 
-                                // 로그인 화면으로 이동
                                 router.replace("/login/KakaoScreen");
                             } catch (error) {
                                 console.error("로그아웃 처리 중 오류:", error);
@@ -103,7 +93,6 @@ export default function MyPageScreen() {
         }
     };
 
-    // 설정 메뉴 항목
     const menuItems: MenuItem[] = [
         { id: 'profile', title: '프로필 정보', icon: 'person-outline', action: () => console.log('프로필 정보') },
         { id: 'notification', title: '알림 설정', icon: 'notifications-outline', action: () => console.log('알림 설정') },
@@ -116,26 +105,21 @@ export default function MyPageScreen() {
         <SafeAreaView className="flex-1 bg-white">
             <Stack.Screen options={{ headerShown: false }} />
             
-            {/* 헤더 */}
             <View className="px-6 pt-12 pb-4">
                 <Text className="text-2xl font-bold">마이페이지</Text>
             </View>
             
             <ScrollView className="flex-1">
-                {/* 사용자 프로필 섹션 */}
                 <View className="mx-6 mb-6 bg-green-50 rounded-xl p-6 flex-row items-center">
-                    {/* 프로필 이미지 */}
                     <View className="bg-green-100 rounded-full w-16 h-16 justify-center items-center">
                         <Ionicons name="person" size={30} color="#22c55e" />
                     </View>
                     
-                    {/* 사용자 정보 */}
                     <View className="ml-4 flex-1">
                         <Text className="text-xl font-bold">{userData?.nickname || '사용자'}</Text>
                         <Text className="text-gray-500 mt-1">{userData?.email || 'user@example.com'}</Text>
                     </View>
                     
-                    {/* 프로필 편집 버튼 */}
                     <TouchableOpacity 
                         className="bg-green-500 rounded-full p-2"
                         onPress={() => console.log('프로필 편집')}
@@ -144,7 +128,6 @@ export default function MyPageScreen() {
                     </TouchableOpacity>
                 </View>
                 
-                {/* 건강 정보 요약 */}
                 <View className="mx-6 mb-6 bg-gray-50 rounded-xl p-4">
                     <Text className="font-bold mb-3">나의 건강 정보</Text>
                     <View className="flex-row justify-between">
@@ -163,7 +146,6 @@ export default function MyPageScreen() {
                     </View>
                 </View>
                 
-                {/* 설정 메뉴 */}
                 <View className="mx-6 mb-6 bg-gray-50 rounded-xl overflow-hidden">
                     {menuItems.map((item, index) => (
                         <TouchableOpacity 
@@ -180,7 +162,6 @@ export default function MyPageScreen() {
                     ))}
                 </View>
                 
-                {/* 로그아웃 버튼 */}
                 <View className="mx-6 mb-12">
                     <TouchableOpacity
                         onPress={handleLogout}

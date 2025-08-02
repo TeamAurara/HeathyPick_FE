@@ -16,7 +16,6 @@ interface KakaoScreenProps {
     onLoginSuccess?: () => void;
 }
 
-// 백엔드 응답 타입 정의
 interface BackendResponse {
     success: boolean;
     code: string;
@@ -47,11 +46,9 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
     const [isLoading, setIsLoading] = useState(false);
     const webViewRef = useRef<WebView>(null);
     
-    // 중복 요청 방지를 위한 상태
     const [isProcessingCode, setIsProcessingCode] = useState(false);
     const [processedCodes] = useState(new Set<string>());
 
-    // 카카오 개발자 콘솔에 등록한 리다이렉트 URI
     const REDIRECT_URI = "http://127.0.0.1:8081/auth/kakao/callback";
 
     const kakaoOpt: KakaoOptions = {
@@ -61,7 +58,6 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
 
     const kakaoURL = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoOpt.clientId}&redirect_uri=${kakaoOpt.redirectUri}&response_type=code`;
 
-    // 백엔드에 카카오 인증 코드 전송
     const sendCodeToBackend = async (code: string) => {
         try {
             setIsLoading(true);
@@ -78,7 +74,7 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
-                    timeout: 10000 // 10초 타임아웃
+                    timeout: 10000
                 }
             );
 
@@ -103,7 +99,6 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
                 console.error("📊 상세 에러 정보:", errorMessage);
                 setErrorInfo(errorMessage);
                 
-                // 500 에러인 경우 추가 정보 제공
                 if (error.response?.status === 500) {
                     console.error("🔧 500 에러 - 가능한 원인:");
                     console.error("1. 백엔드 서버 내부 오류");
@@ -120,7 +115,6 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
         }
     };
 
-    // WebView 내에서 URL 변경 감지
     const handleNavigationStateChange = async (navState: WebViewNavigation) => {
         const { url } = navState;
         console.log("현재 URL:", url);
@@ -132,7 +126,6 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
                 const code = codeMatch[1];
                 console.log("🔍 인증 코드 감지:", code.substring(0, 10) + "...");
                 
-                // 중복 요청 방지
                 if (isProcessingCode) {
                     console.log("⚠️ 이미 처리 중인 요청이 있습니다.");
                     return false;
@@ -154,7 +147,6 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
                         const user = result.userData!;
                         const token = result.tokenData!;
 
-                        // AsyncStorage에 userId 저장
                         try {
                             await AsyncStorage.setItem('userId', user.userId.toString());
                             console.log('userId가 AsyncStorage에 저장되었습니다:', user.userId);
@@ -162,21 +154,17 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
                             console.error('AsyncStorage 저장 오류:', storageError);
                         }
 
-                        // 토큰과 사용자 정보를 AsyncStorage에 저장
                         try {
                             const storageItems: [string, string][] = [];
                             
-                            // accessToken이 존재하는 경우에만 저장
                             if (token.accessToken) {
                                 storageItems.push(['accessToken', token.accessToken]);
                             }
                             
-                            // refreshToken이 존재하는 경우에만 저장
                             if (token.refreshToken) {
                                 storageItems.push(['refreshToken', token.refreshToken]);
                             }
                             
-                            // 사용자 정보 저장
                             storageItems.push(['user', JSON.stringify(user)]);
                             storageItems.push(['userId', user.userId.toString()]);
                             
@@ -231,7 +219,6 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
         return true;
     };
 
-    // 상세 에러 처리
     const handleError = (syntheticEvent: any) => {
         const { nativeEvent } = syntheticEvent;
         const errorDetails = `
@@ -285,7 +272,6 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
                     source={{ uri: kakaoURL }}
                     onNavigationStateChange={handleNavigationStateChange}
                     onError={handleError}
-                    // incognito={true}
                     javaScriptEnabled={true}
                     domStorageEnabled={true}
                     onHttpError={(e) => {

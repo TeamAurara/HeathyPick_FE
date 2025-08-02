@@ -19,7 +19,6 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
   const [isLoading, setIsLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   
-  // 컴포넌트 마운트 시 AsyncStorage에서 userId 가져오기
   useEffect(() => {
     const getUserId = async () => {
       try {
@@ -28,7 +27,6 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
           setUserId(storedUserId);
           console.log('가져온 사용자 ID:', storedUserId);
           
-          // BaseUrl과 API 경로 출력
           console.log('BaseUrl:', BaseUrl);
           console.log('전체 API URL:', `${BaseUrl}/users/${storedUserId}/onboarding`);
         } else {
@@ -42,15 +40,12 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
     getUserId();
   }, [BaseUrl]);
   
-  // Zustand 스토어에서 상태와 액션 가져오기
   const {
-    // 상태
     nickname,
     targetWeight,
     currentStep,
     isCompleted,
     
-    // 액션
     prevStep,
     nextStep,
     isCurrentStepValid,
@@ -58,11 +53,10 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
     getSignUpData
   } = useSignUpStore();
   
-  const totalSteps = 6; // 총 단계 수
+  const totalSteps = 6;
   
   const handleBack = () => {
     if (isCompleted) {
-      // 완료 화면에서는 뒤로가기 불가
       return;
     }
     
@@ -77,25 +71,17 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
     if (currentStep < totalSteps) {
       nextStep();
     } else {
-      // 모든 단계 완료 후 성공 화면으로 전환
       try {
         setIsLoading(true);
         
-        // 회원가입 데이터 가져오기
         const userData = getSignUpData();
         console.log('회원가입 데이터:', userData);
-          // API URL 출력
           const apiUrl = `${BaseUrl}/users/${userId}/onboarding`;
           console.log('요청 URL:', apiUrl);
         if (!userId) {
           throw new Error('사용자 ID를 찾을 수 없습니다.');
         }
         
-        // // API URL 출력
-        // const apiUrl = `${BaseUrl}/users/${userId}/onboarding`;
-        // console.log('요청 URL:', apiUrl);
-        
-        // 백엔드 API 호출 - 온보딩 정보 저장
         const response = await axios.post(
           apiUrl, 
           userData
@@ -103,7 +89,6 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
         
         console.log('백엔드 응답:', response.data);
         
-        // 성공적으로 회원가입이 완료되면 완료 화면으로 전환
         completeSignUp();
       } catch (error) {
         console.error('회원가입 오류:', error);
@@ -119,7 +104,6 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
   };
 
   const handleMainButtonPress = () => {
-    // 메인 화면으로 이동
     if (onOnboardingComplete) onOnboardingComplete();
     else router.replace('/HomeScreen');
   };
@@ -151,7 +135,6 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
     }
   };
 
-  // 마지막 단계에서 버튼 텍스트 변경
   const getButtonText = () => {
     if (currentStep === totalSteps) {
       return isLoading ? '처리 중...' : '목표 설정 완료';
@@ -169,7 +152,6 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ flexGrow: 1 }}
       >
-        {/* 헤더 영역 - 완료 화면에서는 표시하지 않음 */}
         {!isCompleted && (
           <View className="px-4 pt-12 w-full">
             <TouchableOpacity onPress={handleBack} className="p-2 mb-4">
@@ -181,12 +163,10 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
           </View>
         )}
 
-        {/* 콘텐츠 영역 */}
         <View className="flex-1 px-6 py-8">
           {renderStepContent()}
         </View>
 
-        {/* 하단 버튼 - 완료 화면에서는 표시하지 않음 */}
         {!isCompleted && (
           <View className="px-6 pb-16 mt-4">
             <TouchableOpacity
