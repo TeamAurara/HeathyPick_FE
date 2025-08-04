@@ -1,8 +1,8 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useRecordSelfMutation } from '../../hooks/record/mutation/useRecordSelfMutation';
 import { useMealStore } from '../../stores/mealStore';
@@ -23,6 +23,8 @@ export default function AddFoodScreen() {
   const [fat, setFat] = useState('');
 
   const addMealData = useMealStore((state) => state.addMealData);
+  const searchedFood = useMealStore((state) => state.searchedFood);
+  const clearSearchedFood = useMealStore((state) => state.clearSearchedFood);
   const { mutate, isPending, error, isSuccess } = useRecordSelfMutation();
 
   // 컴포넌트 마운트 시 userId 가져오기
@@ -41,8 +43,31 @@ export default function AddFoodScreen() {
     getUserId();
   }, []);
 
+  // 화면이 포커스될 때마다 검색된 음식 데이터 확인
+  useFocusEffect(
+    useCallback(() => {
+      if (searchedFood) {
+        // 검색된 음식 데이터로 입력 필드 채우기
+        setFoodName(searchedFood.menuName);
+        setCalories(searchedFood.calorie.toString());
+        setCarbs(searchedFood.carbohydrate.toString());
+        setProtein(searchedFood.protein.toString());
+        setFat(searchedFood.fat.toString());
+        
+        // 데이터 사용 후 클리어
+        clearSearchedFood();
+        
+        console.log('검색된 음식 데이터 적용:', searchedFood.menuName);
+      }
+    }, [searchedFood, clearSearchedFood])
+  );
+
   const handleGoBack = () => {
     router.back();
+  };
+
+  const handleSearch = () => {
+    router.push('/meal/FoodSearchScreen' as any);
   };
 
   const handleAddFood = () => {
@@ -126,14 +151,20 @@ export default function AddFoodScreen() {
       <ScrollView className="flex-1 px-5 py-4">
         <View className="mb-6">
           <Text className="text-green-500 font-medium mb-2">음식 이름(필수)</Text>
-          <View className="border-b border-green-500 pb-2">
+          <View className="flex-row items-center border-b border-green-500 pb-2">
             <TextInput
               value={foodName}
               onChangeText={setFoodName}
               placeholder="ex) 사과, 초코케이크"
               placeholderTextColor="#999"
-              className="text-base text-gray-500"
+              className="flex-1 text-base text-gray-500"
             />
+            <TouchableOpacity
+              onPress={handleSearch}
+              className="ml-3 bg-green-500 px-3 py-1 rounded-full"
+            >
+              <Text className="text-white text-sm font-medium">검색</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
