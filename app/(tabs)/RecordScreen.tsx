@@ -4,6 +4,7 @@ import { MealCard } from '@/components/ui/MealCard';
 import { SupplementCard } from '@/components/ui/SupplementCard';
 import { WaterInputModal } from '@/components/ui/WaterInputModal';
 import { WeightCard } from '@/components/ui/WeightCard';
+import { WeightInputModal } from '@/components/ui/WeightInputModal';
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
@@ -18,19 +19,26 @@ const mockMealData = {
   // 오늘 날짜
   [formatDateKey(new Date())]: {
     breakfast: {
-      description: '빵, 토마토, 치즈',
+      foodItems: [
+        { name: '빵', kcal: 150 },
+        { name: '토마토', kcal: 50 },
+        { name: '치즈', kcal: 100 }
+      ],
       currentValue: 350,
       maxValue: 500,
       kcal: 300,
     },
     lunch: {
-      description: '스파게티',
+      foodItems: [
+        { name: '스파게티', kcal: 600 },
+        { name: '샐러드', kcal: 200 }
+      ],
       currentValue: 500,
       maxValue: 500,
       kcal: 800,
     },
     dinner: {
-      description: '-',
+      foodItems: [],
       currentValue: 25,
       maxValue: 500,
     },
@@ -38,24 +46,34 @@ const mockMealData = {
       description: '-',
       currentValue: 10,
       maxValue: 200,
+      foodItems: []
     }
   },
   // 어제 날짜
   [formatDateKey(new Date(new Date().setDate(new Date().getDate() - 1)))]: {
     breakfast: {
-      description: '샐러드, 계란',
+      foodItems: [
+        { name: '샐러드', kcal: 100 },
+        { name: '계란', kcal: 100 }
+      ],
       currentValue: 250,
       maxValue: 500,
       kcal: 200,
     },
     lunch: {
-      description: '불고기 덮밥',
+      foodItems: [
+        { name: '불고기 덮밥', kcal: 650 }
+      ],
       currentValue: 450,
       maxValue: 500,
       kcal: 650,
     },
     dinner: {
-      description: '닭가슴살',
+      foodItems: [
+        { name: '닭가슴살', kcal: 200 },
+        { name: '샐러드', kcal: 100 },
+        { name: '현미밥', kcal: 50 }
+      ],
       currentValue: 300,
       maxValue: 500,
       kcal: 350,
@@ -64,22 +82,23 @@ const mockMealData = {
       description: '2L',
       currentValue: 180,
       maxValue: 200,
+      foodItems: []
     }
   },
   // 내일 날짜 (빈 데이터)
   [formatDateKey(new Date(new Date().setDate(new Date().getDate() + 1)))]: {
     breakfast: {
-      description: '-',
+      foodItems: [],
       currentValue: 0,
       maxValue: 500,
     },
     lunch: {
-      description: '-',
+      foodItems: [],
       currentValue: 0,
       maxValue: 500,
     },
     dinner: {
-      description: '-',
+      foodItems: [],
       currentValue: 0,
       maxValue: 500,
     },
@@ -87,6 +106,7 @@ const mockMealData = {
       description: '-',
       currentValue: 0,
       maxValue: 200,
+      foodItems: []
     }
   }
 };
@@ -138,6 +158,7 @@ export default function RecordScreen() {
   const [supplementData, setSupplementData] = useState<any[]>([]);
   const [weightData, setWeightData] = useState<any>(null);
   const [isWaterModalVisible, setIsWaterModalVisible] = useState(false);
+  const [isWeightModalVisible, setIsWeightModalVisible] = useState(false);
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
   
   // 날짜가 변경될 때마다 해당 날짜의 데이터를 불러옴
@@ -146,10 +167,10 @@ export default function RecordScreen() {
     
     // 식사 데이터 불러오기
     const mData = mockMealData[dateKey] || {
-      breakfast: { description: '-', currentValue: 0, maxValue: 500 },
-      lunch: { description: '-', currentValue: 0, maxValue: 500 },
-      dinner: { description: '-', currentValue: 0, maxValue: 500 },
-      water: { description: '-', currentValue: 0, maxValue: 200 }
+      breakfast: { foodItems: [], currentValue: 0, maxValue: 500 },
+      lunch: { foodItems: [], currentValue: 0, maxValue: 500 },
+      dinner: { foodItems: [], currentValue: 0, maxValue: 500 },
+      water: { description: '-', currentValue: 0, maxValue: 200, foodItems: [] }
     };
     setMealData(mData);
     
@@ -233,7 +254,34 @@ export default function RecordScreen() {
   // 체중 카드 클릭 핸들러
   const handleWeightCardPress = () => {
     console.log(`체중 카드가 클릭되었습니다. 날짜: ${formatDateKey(currentDate)}`);
-    // 체중 기록 상세 페이지로 이동하거나 체중 입력 모달 표시 등의 기능 구현 가능
+    setIsWeightModalVisible(true);
+  };
+  
+  // 체중 저장 핸들러
+  const handleSaveWeight = (weight: number) => {
+    console.log(`체중 ${weight}kg 저장, 날짜: ${formatDateKey(currentDate)}`);
+    
+    // 현재 날짜의 데이터 복사
+    const dateKey = formatDateKey(currentDate);
+    const updatedWeightData = { ...mockWeightData };
+    
+    // 이전 체중 값 저장 (현재 값이 이전 값이 됨)
+    const previousWeight = updatedWeightData[dateKey]?.currentWeight || weight;
+    
+    // 체중 데이터 업데이트
+    updatedWeightData[dateKey] = {
+      currentWeight: weight,
+      previousWeight: previousWeight,
+      targetWeight: updatedWeightData[dateKey]?.targetWeight || 65.0 // 기본 목표 체중
+    };
+    
+    // 데이터 업데이트
+    setWeightData(updatedWeightData[dateKey]);
+    
+    // 실제 앱에서는 API를 통해 서버에 저장할 수 있습니다
+    // saveWeightData(dateKey, weight).then(() => {
+    //   fetchWeightData(dateKey).then(data => setWeightData(data));
+    // });
   };
 
   // 물 섭취량 저장 핸들러
@@ -246,10 +294,10 @@ export default function RecordScreen() {
     
     if (!updatedMealData[dateKey]) {
       updatedMealData[dateKey] = {
-        breakfast: { description: '-', currentValue: 0, maxValue: 500 },
-        lunch: { description: '-', currentValue: 0, maxValue: 500 },
-        dinner: { description: '-', currentValue: 0, maxValue: 500 },
-        water: { description: '-', currentValue: 0, maxValue: 200 }
+        breakfast: { foodItems: [], currentValue: 0, maxValue: 500 },
+        lunch: { foodItems: [], currentValue: 0, maxValue: 500 },
+        dinner: { foodItems: [], currentValue: 0, maxValue: 500 },
+        water: { description: '-', currentValue: 0, maxValue: 200, foodItems: [] }
       };
     }
     
@@ -258,7 +306,8 @@ export default function RecordScreen() {
     updatedMealData[dateKey].water = {
       description: `${amount}L`,
       currentValue: waterValue,
-      maxValue: 200
+      maxValue: 200,
+      foodItems: []
     };
     
     // 데이터 업데이트
@@ -348,7 +397,7 @@ export default function RecordScreen() {
           {/* 아침 카드 */}
           <MealCard 
             title="아침" 
-            description={mealData.breakfast.description}
+            foodItems={mealData.breakfast.foodItems}
             currentValue={mealData.breakfast.currentValue}
             maxValue={mealData.breakfast.maxValue}
             kcal={mealData.breakfast.kcal}
@@ -359,7 +408,7 @@ export default function RecordScreen() {
           {/* 점심 카드 */}
           <MealCard 
             title="점심" 
-            description={mealData.lunch.description}
+            foodItems={mealData.lunch.foodItems}
             currentValue={mealData.lunch.currentValue}
             maxValue={mealData.lunch.maxValue}
             kcal={mealData.lunch.kcal}
@@ -370,7 +419,7 @@ export default function RecordScreen() {
           {/* 저녁 카드 */}
           <MealCard 
             title="저녁" 
-            description={mealData.dinner.description}
+            foodItems={mealData.dinner.foodItems}
             currentValue={mealData.dinner.currentValue}
             maxValue={mealData.dinner.maxValue}
             kcal={mealData.dinner.kcal}
@@ -380,7 +429,7 @@ export default function RecordScreen() {
           {/* 물 섭취 카드 */}
           <MealCard 
             title="물 섭취" 
-            description={mealData.water.description}
+            foodItems={mealData.water.description ? [{ name: mealData.water.description }] : []}
             currentValue={mealData.water.currentValue}
             maxValue={mealData.water.maxValue}
             onPress={() => handleMealCardPress('물 섭취')}
@@ -431,6 +480,14 @@ export default function RecordScreen() {
         onClose={() => setIsWaterModalVisible(false)}
         onSave={handleSaveWaterAmount}
         currentAmount={mealData?.water?.description !== '-' ? parseFloat(mealData.water.description) : 0}
+      />
+      
+      {/* 체중 입력 모달 */}
+      <WeightInputModal
+        isVisible={isWeightModalVisible}
+        onClose={() => setIsWeightModalVisible(false)}
+        onSave={handleSaveWeight}
+        currentWeight={weightData?.currentWeight}
       />
 
       {/* 캘린더 모달 */}
