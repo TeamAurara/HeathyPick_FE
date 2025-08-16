@@ -1,9 +1,8 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { useMealStore } from '../../stores/mealStore';
 
 // 네비게이션 헤더 숨기기
 export const options = {
@@ -12,7 +11,8 @@ export const options = {
 
 export default function MealDetailScreen() {
   const router = useRouter();
-  const { mealType: type, mealDate: date, mealData } = useMealStore();
+  const [mealData, setMealData] = useState<MealDataType[]>([]); // 먹은 음식 데이터
+  const [mealType, setMealType] = useState<string>(''); // 식사 타입
 
   const handleGoBack = () => {
     router.back();
@@ -31,7 +31,7 @@ export default function MealDetailScreen() {
   };
 
   const getTitle = () => {
-    switch (type) {
+    switch (mealType) {
       case 'breakfast': return '아침';
       case 'lunch':     return '점심';
       case 'dinner':    return '저녁';
