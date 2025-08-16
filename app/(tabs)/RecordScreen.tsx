@@ -1,10 +1,12 @@
 import CustomCalendars from '@/components/record/CustomCalendars';
 import { CalendarIcon } from '@/components/ui/CalendarIcon';
 import { MealCard } from '@/components/ui/MealCard';
+import { SupplementAddModal } from '@/components/ui/SupplementAddModal';
 import { SupplementCard } from '@/components/ui/SupplementCard';
 import { WaterInputModal } from '@/components/ui/WaterInputModal';
 import { WeightCard } from '@/components/ui/WeightCard';
 import { WeightInputModal } from '@/components/ui/WeightInputModal';
+import { useSupplementStore } from '@/stores/supplementStore';
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
@@ -25,7 +27,7 @@ const mockMealData = {
         { name: '치즈', kcal: 100 }
       ],
       currentValue: 350,
-      maxValue: 500,
+      maxValue: 800,
       kcal: 300,
     },
     lunch: {
@@ -34,13 +36,13 @@ const mockMealData = {
         { name: '샐러드', kcal: 200 }
       ],
       currentValue: 500,
-      maxValue: 500,
+      maxValue: 800,
       kcal: 800,
     },
     dinner: {
       foodItems: [],
       currentValue: 25,
-      maxValue: 500,
+      maxValue: 800,
     },
     water: {
       description: '-',
@@ -57,7 +59,7 @@ const mockMealData = {
         { name: '계란', kcal: 100 }
       ],
       currentValue: 250,
-      maxValue: 500,
+      maxValue: 800,
       kcal: 200,
     },
     lunch: {
@@ -65,7 +67,7 @@ const mockMealData = {
         { name: '불고기 덮밥', kcal: 650 }
       ],
       currentValue: 450,
-      maxValue: 500,
+      maxValue: 800,
       kcal: 650,
     },
     dinner: {
@@ -75,7 +77,7 @@ const mockMealData = {
         { name: '현미밥', kcal: 50 }
       ],
       currentValue: 300,
-      maxValue: 500,
+      maxValue: 800,
       kcal: 350,
     },
     water: {
@@ -90,17 +92,17 @@ const mockMealData = {
     breakfast: {
       foodItems: [],
       currentValue: 0,
-      maxValue: 500,
+      maxValue: 800,
     },
     lunch: {
       foodItems: [],
       currentValue: 0,
-      maxValue: 500,
+      maxValue: 800,
     },
     dinner: {
       foodItems: [],
       currentValue: 0,
-      maxValue: 500,
+      maxValue: 800,
     },
     water: {
       description: '-',
@@ -160,6 +162,10 @@ export default function RecordScreen() {
   const [isWaterModalVisible, setIsWaterModalVisible] = useState(false);
   const [isWeightModalVisible, setIsWeightModalVisible] = useState(false);
   const [isCalendarVisible, setIsCalendarVisible] = useState(false);
+  const [isSupplementModalVisible, setIsSupplementModalVisible] = useState(false);
+  
+  // 영양제 스토어 사용
+  const { addSupplement, toggleTaken, getSupplement } = useSupplementStore();
   
   // 날짜가 변경될 때마다 해당 날짜의 데이터를 불러옴
   useEffect(() => {
@@ -167,16 +173,21 @@ export default function RecordScreen() {
     
     // 식사 데이터 불러오기
     const mData = mockMealData[dateKey] || {
-      breakfast: { foodItems: [], currentValue: 0, maxValue: 500 },
-      lunch: { foodItems: [], currentValue: 0, maxValue: 500 },
-      dinner: { foodItems: [], currentValue: 0, maxValue: 500 },
+      breakfast: { foodItems: [], currentValue: 0, maxValue: 800 },
+      lunch: { foodItems: [], currentValue: 0, maxValue: 800 },
+      dinner: { foodItems: [], currentValue: 0, maxValue: 800 },
       water: { description: '-', currentValue: 0, maxValue: 200, foodItems: [] }
     };
     setMealData(mData);
     
-    // 영양제 데이터 불러오기
-    const sData = mockSupplementData[dateKey] || [];
-    setSupplementData(sData);
+    // 영양제 데이터 불러오기 - Zustand 스토어에서 먼저 확인하고, 없으면 목업 데이터 사용
+    const supplementsFromStore = getSupplement(dateKey);
+    if (supplementsFromStore.length > 0) {
+      setSupplementData(supplementsFromStore);
+    } else {
+      const sData = mockSupplementData[dateKey] || [];
+      setSupplementData(sData);
+    }
     
     // 체중 데이터 불러오기
     const wData = mockWeightData[dateKey] || null;
@@ -188,7 +199,7 @@ export default function RecordScreen() {
     //   setSupplementData(data.supplements);
     //   setWeightData(data.weight);
     // });
-  }, [currentDate]);
+  }, [currentDate, getSupplement]);
   
   // 날짜 포맷팅 함수
   const formatDate = (date: Date) => {
@@ -248,7 +259,31 @@ export default function RecordScreen() {
   // 영양제 카드 클릭 핸들러
   const handleSupplementCardPress = (supplementId: number) => {
     console.log(`영양제 ID ${supplementId} 카드가 클릭되었습니다. 날짜: ${formatDateKey(currentDate)}`);
-    // 영양제 상세 페이지로 이동하거나 복용 상태 토글 등의 기능 구현 가능
+    // 영양제 복용 상태 토글
+    const dateKey = formatDateKey(currentDate);
+    toggleTaken(dateKey, supplementId);
+    
+    // 상태 업데이트를 위해 데이터 다시 불러오기
+    const updatedSupplements = getSupplement(dateKey);
+    setSupplementData(updatedSupplements);
+  };
+  
+  // 영양제 추가 핸들러
+  const handleAddSupplement = () => {
+    setIsSupplementModalVisible(true);
+  };
+  
+  // 영양제 저장 핸들러
+  const handleSaveSupplement = (name: string, timeToTake: string) => {
+    const dateKey = formatDateKey(currentDate);
+    addSupplement(dateKey, { name, timeToTake, isTaken: false });
+    
+    // 모달 닫기
+    setIsSupplementModalVisible(false);
+    
+    // 상태 업데이트를 위해 데이터 다시 불러오기
+    const updatedSupplements = getSupplement(dateKey);
+    setSupplementData(updatedSupplements);
   };
 
   // 체중 카드 클릭 핸들러
@@ -294,9 +329,9 @@ export default function RecordScreen() {
     
     if (!updatedMealData[dateKey]) {
       updatedMealData[dateKey] = {
-        breakfast: { foodItems: [], currentValue: 0, maxValue: 500 },
-        lunch: { foodItems: [], currentValue: 0, maxValue: 500 },
-        dinner: { foodItems: [], currentValue: 0, maxValue: 500 },
+        breakfast: { foodItems: [], currentValue: 0, maxValue: 800 },
+        lunch: { foodItems: [], currentValue: 0, maxValue: 800 },
+        dinner: { foodItems: [], currentValue: 0, maxValue: 800 },
         water: { description: '-', currentValue: 0, maxValue: 200, foodItems: [] }
       };
     }
@@ -441,7 +476,7 @@ export default function RecordScreen() {
           <View className="mb-6">
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-xl font-bold">영양제 알림</Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={handleAddSupplement}>
                 <Text className="text-green-500">+ 추가</Text>
               </TouchableOpacity>
             </View>
@@ -488,6 +523,13 @@ export default function RecordScreen() {
         onClose={() => setIsWeightModalVisible(false)}
         onSave={handleSaveWeight}
         currentWeight={weightData?.currentWeight}
+      />
+      
+      {/* 영양제 추가 모달 */}
+      <SupplementAddModal
+        isVisible={isSupplementModalVisible}
+        onClose={() => setIsSupplementModalVisible(false)}
+        onSave={handleSaveSupplement}
       />
 
       {/* 캘린더 모달 */}
