@@ -1,8 +1,11 @@
+import { FoodSearchComponent } from '@/components/ui/FoodSearchComponent';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Food } from '@/constants/schemas/food';
+import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Alert, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 // 네비게이션 헤더 숨기기
 export const options = {
@@ -11,23 +14,43 @@ export const options = {
 
 export default function MealDetailScreen() {
   const router = useRouter();
-  const [mealData, setMealData] = useState<MealDataType[]>([]); // 먹은 음식 데이터
+  const params = useLocalSearchParams();
+  const queryClient = useQueryClient();
+  const [mealData, setMealData] = useState<Food[]>([]); // 먹은 음식 데이터
   const [mealType, setMealType] = useState<string>(''); // 식사 타입
+  const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
 
   const handleGoBack = () => {
     router.back();
   };
 
-  type MealDataType = {
-    name: string;
-    calories: string;
-    carbs: string;
-    protein: string;
-    fat: string;
+
+
+  // 라우터 파라미터에서 식사 타입과 날짜 가져오기
+  useEffect(() => {
+    if (params.type) {
+      setMealType(params.type as string);
+    }
+  }, [params.type]);
+
+  const openSearchModal = () => {
+    setIsSearchModalVisible(true);
   };
 
-  const goToAddFoodScreen = () => {
-    router.push('/meal/AddFoodScreen');
+  const closeSearchModal = () => {
+    setIsSearchModalVisible(false);
+  };
+
+  const handleFoodSelect = (food: Food) => {
+    setMealData(prev => [...prev, food]);
+    closeSearchModal();
+    
+    // RecordScreen의 캐시 무효화하여 데이터 동기화
+    if (params.date) {
+      queryClient.invalidateQueries({ queryKey: ['meals', params.date] });
+    }
+    
+    Alert.alert('음식 추가 완료', `${food.menuName}이(가) ${getTitle()}에 추가되었습니다.`);
   };
 
   const getTitle = () => {
@@ -57,14 +80,13 @@ export default function MealDetailScreen() {
 
       {/* 검색창 */}
       <View className="px-5 py-3">
-        <View className="flex-row items-center justify-between bg-gray-100 rounded-full px-4 py-2">
-          <TextInput
-            className="flex-1 text-base text-gray-500"
-            placeholder="음식을 검색해보세요"
-            placeholderTextColor="#999"
-          />
+        <TouchableOpacity 
+          className="flex-row items-center justify-between bg-gray-100 rounded-full px-4 py-2"
+          onPress={openSearchModal}
+        >
+          <Text className="flex-1 text-base text-gray-500">음식을 검색해보세요</Text>
           <IconSymbol name="magnifyingglass" size={20} color="#999" />
-        </View>
+        </TouchableOpacity>
       </View>
 
       {/* 본문 */}
@@ -87,16 +109,16 @@ export default function MealDetailScreen() {
           </View>
         ) : (
           <View className="px-5 py-10">
-            {mealData.map((meal: MealDataType, idx: number) => (
+            {mealData.map((meal: Food, idx: number) => (
               <View key={idx} className="mb-4 p-4 bg-green-50 border border-green-500 shadow-md rounded-lg">
-                <Text className="text-lg font-bold mb-2 text-green-600">{meal.name}</Text>
+                <Text className="text-lg font-bold mb-2 text-green-600">{meal.menuName}</Text>
                 <View className="flex-row items-center mb-1">
                   <IconSymbol name="flame" size={16} color="green" />
                   <Text className="text-sm text-gray-700 ml-2">칼로리: {meal.calories} kcal</Text>
                 </View>
                 <View className="flex-row items-center mb-1">
                   <IconSymbol name="leaf" size={16} color="green" />
-                  <Text className="text-sm text-gray-700 ml-2">탄수화물: {meal.carbs} g</Text>
+                  <Text className="text-sm text-gray-700 ml-2">탄수화물: {meal.carbohydrate} g</Text>
                 </View>
                 <View className="flex-row items-center mb-1">
                   <IconSymbol name="fork.knife" size={16} color="green" />
@@ -115,7 +137,7 @@ export default function MealDetailScreen() {
       {/* 하단 버튼 */}
       <View className="absolute bottom-8 left-0 right-0 px-6">
         <TouchableOpacity
-          onPress={goToAddFoodScreen}
+          onPress={openSearchModal}
           className="bg-white border border-green-500 py-4 rounded-full flex-row justify-center items-center"
         >
           <Text className="text-green-500 font-medium text-lg">
@@ -123,6 +145,34 @@ export default function MealDetailScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* 음식 검색 모달 */}
+      <Modal
+        visible={isSearchModalVisible}
+        animationType="slide"
+        onRequestClose={closeSearchModal}
+      >
+        <View className="flex-1 bg-white">
+          {/* 모달 헤더 */}
+          <View className="pt-14 px-5 pb-4 bg-white border-b border-gray-200">
+            <View className="flex-row items-center justify-between">
+              <TouchableOpacity onPress={closeSearchModal}>
+                <Text className="text-lg text-blue-500">취소</Text>
+              </TouchableOpacity>
+              <Text className="text-xl font-bold">음식 검색</Text>
+              <View style={{ width: 50 }} />
+            </View>
+          </View>
+          
+          {/* 음식 검색 컴포넌트 */}
+          <View className="flex-1 px-5">
+            <FoodSearchComponent
+              onFoodSelect={handleFoodSelect}
+              placeholder={`${getTitle()}에 추가할 음식을 검색하세요`}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
