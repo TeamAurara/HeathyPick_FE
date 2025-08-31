@@ -6,7 +6,9 @@ import { SupplementCard } from '@/components/ui/SupplementCard';
 import { WaterInputModal } from '@/components/ui/WaterInputModal';
 import { WeightCard } from '@/components/ui/WeightCard';
 import { WeightInputModal } from '@/components/ui/WeightInputModal';
+import { Food } from '@/constants/schemas/food';
 import { useSupplementStore } from '@/stores/supplementStore';
+import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
@@ -16,102 +18,64 @@ const formatDateKey = (date: Date): string => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
-// 임시 데이터 - 실제로는 API에서 가져오거나 상태 관리 라이브러리에서 관리할 수 있습니다
-const mockMealData = {
-  // 오늘 날짜
-  [formatDateKey(new Date())]: {
-    breakfast: {
-      foodItems: [
-        { name: '빵', kcal: 150 },
-        { name: '토마토', kcal: 50 },
-        { name: '치즈', kcal: 100 }
-      ],
-      currentValue: 350,
-      maxValue: 800,
-      kcal: 300,
-    },
-    lunch: {
-      foodItems: [
-        { name: '스파게티', kcal: 600 },
-        { name: '샐러드', kcal: 200 }
-      ],
-      currentValue: 500,
-      maxValue: 800,
-      kcal: 800,
-    },
-    dinner: {
-      foodItems: [],
-      currentValue: 25,
-      maxValue: 800,
-    },
-    water: {
-      description: '-',
-      currentValue: 10,
-      maxValue: 200,
-      foodItems: []
-    }
+// API 기반 식사 데이터 타입
+interface MealData {
+  breakfast: {
+    foodItems: Food[];
+    currentValue: number;
+    maxValue: number;
+    kcal?: number;
+  };
+  lunch: {
+    foodItems: Food[];
+    currentValue: number;
+    maxValue: number;
+    kcal?: number;
+  };
+  dinner: {
+    foodItems: Food[];
+    currentValue: number;
+    maxValue: number;
+    kcal?: number;
+  };
+  water: {
+    description: string;
+    currentValue: number;
+    maxValue: number;
+    foodItems: Food[];
+  };
+}
+
+// 초기 빈 식사 데이터 생성 함수
+const createEmptyMealData = (): MealData => ({
+  breakfast: {
+    foodItems: [],
+    currentValue: 0,
+    maxValue: 800,
+    kcal: 0,
   },
-  // 어제 날짜
-  [formatDateKey(new Date(new Date().setDate(new Date().getDate() - 1)))]: {
-    breakfast: {
-      foodItems: [
-        { name: '샐러드', kcal: 100 },
-        { name: '계란', kcal: 100 }
-      ],
-      currentValue: 250,
-      maxValue: 800,
-      kcal: 200,
-    },
-    lunch: {
-      foodItems: [
-        { name: '불고기 덮밥', kcal: 650 }
-      ],
-      currentValue: 450,
-      maxValue: 800,
-      kcal: 650,
-    },
-    dinner: {
-      foodItems: [
-        { name: '닭가슴살', kcal: 200 },
-        { name: '샐러드', kcal: 100 },
-        { name: '현미밥', kcal: 50 }
-      ],
-      currentValue: 300,
-      maxValue: 800,
-      kcal: 350,
-    },
-    water: {
-      description: '2L',
-      currentValue: 180,
-      maxValue: 200,
-      foodItems: []
-    }
+  lunch: {
+    foodItems: [],
+    currentValue: 0,
+    maxValue: 800,
+    kcal: 0,
   },
-  // 내일 날짜 (빈 데이터)
-  [formatDateKey(new Date(new Date().setDate(new Date().getDate() + 1)))]: {
-    breakfast: {
-      foodItems: [],
-      currentValue: 0,
-      maxValue: 800,
-    },
-    lunch: {
-      foodItems: [],
-      currentValue: 0,
-      maxValue: 800,
-    },
-    dinner: {
-      foodItems: [],
-      currentValue: 0,
-      maxValue: 800,
-    },
-    water: {
-      description: '-',
-      currentValue: 0,
-      maxValue: 200,
-      foodItems: []
-    }
+  dinner: {
+    foodItems: [],
+    currentValue: 0,
+    maxValue: 800,
+    kcal: 0,
+  },
+  water: {
+    description: '-',
+    currentValue: 0,
+    maxValue: 200,
+    foodItems: []
   }
-};
+});
+
+// 로컬 상태로 식사 데이터 관리
+const mealDataStore: Record<string, MealData> = {};
 
 // 임시 영양제 데이터
 const mockSupplementData = {
@@ -155,6 +119,7 @@ const mockWeightData = {
 
 export default function RecordScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [mealData, setMealData] = useState<any>(null);
   const [supplementData, setSupplementData] = useState<any[]>([]);
@@ -171,13 +136,8 @@ export default function RecordScreen() {
   useEffect(() => {
     const dateKey = formatDateKey(currentDate);
     
-    // 식사 데이터 불러오기
-    const mData = mockMealData[dateKey] || {
-      breakfast: { foodItems: [], currentValue: 0, maxValue: 800 },
-      lunch: { foodItems: [], currentValue: 0, maxValue: 800 },
-      dinner: { foodItems: [], currentValue: 0, maxValue: 800 },
-      water: { description: '-', currentValue: 0, maxValue: 200, foodItems: [] }
-    };
+    // 식사 데이터 불러오기 - 로컬 스토어에서 가져오거나 빈 데이터 생성
+    const mData = mealDataStore[dateKey] || createEmptyMealData();
     setMealData(mData);
     
     // 영양제 데이터 불러오기 - Zustand 스토어에서 먼저 확인하고, 없으면 목업 데이터 사용
@@ -286,6 +246,34 @@ export default function RecordScreen() {
     setSupplementData(updatedSupplements);
   };
 
+  // 음식 추가 핸들러 (API 기반)
+  const handleAddFood = (mealType: 'breakfast' | 'lunch' | 'dinner', food: Food) => {
+    const dateKey = formatDateKey(currentDate);
+    
+    // 로컬 스토어에서 해당 날짜의 데이터 가져오기
+    const currentMealData = mealDataStore[dateKey] || createEmptyMealData();
+    
+    // 해당 식사 타입에 음식 추가
+    currentMealData[mealType].foodItems.push(food);
+    
+    // 칼로리 계산
+    const totalKcal = currentMealData[mealType].foodItems.reduce((sum, item) => sum + item.calories, 0);
+    currentMealData[mealType].kcal = totalKcal;
+    
+    // 진행률 계산 (칼로리 기준)
+    const progressValue = Math.min(Math.round((totalKcal / currentMealData[mealType].maxValue) * 100), 100);
+    currentMealData[mealType].currentValue = progressValue;
+    
+    // 로컬 스토어 업데이트
+    mealDataStore[dateKey] = currentMealData;
+    
+    // 상태 업데이트
+    setMealData(currentMealData);
+    
+    // QueryClient 무효화하여 캐시 갱신
+    queryClient.invalidateQueries({ queryKey: ['meals', dateKey] });
+  };
+
   // 체중 카드 클릭 핸들러
   const handleWeightCardPress = () => {
     console.log(`체중 카드가 클릭되었습니다. 날짜: ${formatDateKey(currentDate)}`);
@@ -325,7 +313,7 @@ export default function RecordScreen() {
     
     // 현재 날짜의 데이터 복사
     const dateKey = formatDateKey(currentDate);
-    const updatedMealData = { ...mockMealData };
+    const updatedMealData = { ...mealDataStore };
     
     if (!updatedMealData[dateKey]) {
       updatedMealData[dateKey] = {
@@ -366,12 +354,12 @@ export default function RecordScreen() {
     setIsCalendarVisible(false);
   };
 
-  // 데이터가 있는 날짜에 마커 표시하는 함수
+      // 데이터가 있는 날짜에 마커 표시하는 함수
   const getMarkedDates = () => {
     const markedDates: Record<string, any> = {};
     
     // 식사 데이터가 있는 날짜에 마커 추가
-    Object.keys(mockMealData).forEach(dateKey => {
+    Object.keys(mealDataStore).forEach(dateKey => {
       markedDates[dateKey] = { 
         marked: true, 
         dotColor: '#22c55e' 
