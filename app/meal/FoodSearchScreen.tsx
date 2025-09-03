@@ -1,14 +1,16 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { API_CONFIG, createApiUrl } from '@/constants/api';
+import axios from 'axios';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  FlatList,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { useMealStore } from '../../stores/mealStore';
 
@@ -40,7 +42,7 @@ export default function FoodSearchScreen() {
     router.back();
   };
 
-  // 검색 함수 (실제 API 호출로 대체 예정)
+  // 검색 함수 (실제 API 호출)
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
       Alert.alert('알림', '검색어를 입력해주세요.');
@@ -50,43 +52,22 @@ export default function FoodSearchScreen() {
     setIsSearching(true);
 
     try {
-      // TODO: 실제 검색 API 호출
-      // const response = await searchFoodAPI(searchQuery);
-      
-      // 임시 더미 데이터
-      await new Promise(resolve => setTimeout(resolve, 1000)); // 로딩 시뮬레이션
-      
-      const dummyResults: FoodSearchResult[] = [
-        {
-          id: 1,
-          name: '황금올리브치킨',
-          calorie: 500,
-          carbohydrate: 50,
-          protein: 30,
-          fat: 20,
-          brand: 'BBQ'
-        },
-        {
-          id: 2,
-          name: '치킨무',
-          calorie: 10,
-          carbohydrate: 2,
-          protein: 1,
-          fat: 0,
-          brand: 'BBQ'
-        },
-        {
-          id: 3,
-          name: '콜라',
-          calorie: 150,
-          carbohydrate: 40,
-          protein: 0,
-          fat: 0,
-          brand: '코카콜라'
-        }
-      ];
+      const url = createApiUrl(API_CONFIG.ENDPOINTS.FOOD_SEARCH);
+      const response = await axios.get(url, { params: { query: searchQuery.trim() } });
+      const payload = response.data;
+      const foods = Array.isArray(payload?.data) ? payload.data : (payload?.data ? [payload.data] : []);
 
-      setSearchResults(dummyResults);
+      const mapped: FoodSearchResult[] = foods.map((f: any) => ({
+        id: f.foodId,
+        name: f.menuName,
+        calorie: Number(f.calories ?? f.calorie ?? 0),
+        carbohydrate: Number(f.carbohydrate ?? 0),
+        protein: Number(f.protein ?? 0),
+        fat: Number(f.fat ?? 0),
+        brand: f.brand,
+      }));
+
+      setSearchResults(mapped);
     } catch (error) {
       console.error('검색 실패:', error);
       Alert.alert('오류', '검색 중 오류가 발생했습니다.');
@@ -99,6 +80,7 @@ export default function FoodSearchScreen() {
   const handleSelectFood = (food: FoodSearchResult) => {
     // 전역 상태에 선택된 음식 정보 저장
     setSearchedFood({
+      foodId: food.id,
       menuName: food.name,
       calorie: food.calorie,
       carbohydrate: food.carbohydrate,
