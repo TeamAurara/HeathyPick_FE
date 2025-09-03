@@ -1,11 +1,9 @@
-import { FoodSearchComponent } from '@/components/ui/FoodSearchComponent';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Food } from '@/constants/schemas/food';
-import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 // 네비게이션 헤더 숨기기
 export const options = {
@@ -15,10 +13,8 @@ export const options = {
 export default function MealDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const queryClient = useQueryClient();
   const [mealData, setMealData] = useState<Food[]>([]); // 먹은 음식 데이터
   const [mealType, setMealType] = useState<string>(''); // 식사 타입
-  const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
 
   const handleGoBack = () => {
     router.back();
@@ -33,24 +29,10 @@ export default function MealDetailScreen() {
     }
   }, [params.type]);
 
-  const openSearchModal = () => {
-    setIsSearchModalVisible(true);
-  };
-
-  const closeSearchModal = () => {
-    setIsSearchModalVisible(false);
-  };
-
-  const handleFoodSelect = (food: Food) => {
-    setMealData(prev => [...prev, food]);
-    closeSearchModal();
-    
-    // RecordScreen의 캐시 무효화하여 데이터 동기화
-    if (params.date) {
-      queryClient.invalidateQueries({ queryKey: ['meals', params.date] });
-    }
-    
-    Alert.alert('음식 추가 완료', `${food.menuName}이(가) ${getTitle()}에 추가되었습니다.`);
+  // "추가하기" 버튼: AddFoodScreen으로 이동
+  const goToAddFoodScreen = () => {
+    // 필요한 경우 식사 타입/날짜를 전달
+    router.push({ pathname: '/meal/AddFoodScreen' });
   };
 
   const getTitle = () => {
@@ -78,16 +60,8 @@ export default function MealDetailScreen() {
         </View>
       </View>
 
-      {/* 검색창 */}
-      <View className="px-5 py-3">
-        <TouchableOpacity 
-          className="flex-row items-center justify-between bg-gray-100 rounded-full px-4 py-2"
-          onPress={openSearchModal}
-        >
-          <Text className="flex-1 text-base text-gray-500">음식을 검색해보세요</Text>
-          <IconSymbol name="magnifyingglass" size={20} color="#999" />
-        </TouchableOpacity>
-      </View>
+      {/* 안내 문구 영역 (필요 시 유지) */}
+      <View className="px-5 py-3" />
 
       {/* 본문 */}
       <ScrollView className="flex-1">
@@ -134,10 +108,10 @@ export default function MealDetailScreen() {
         )}
       </ScrollView>
 
-      {/* 하단 버튼 */}
+      {/* 하단 버튼: AddFoodScreen으로 이동 */}
       <View className="absolute bottom-8 left-0 right-0 px-6">
         <TouchableOpacity
-          onPress={openSearchModal}
+          onPress={goToAddFoodScreen}
           className="bg-white border border-green-500 py-4 rounded-full flex-row justify-center items-center"
         >
           <Text className="text-green-500 font-medium text-lg">
@@ -145,34 +119,6 @@ export default function MealDetailScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-
-      {/* 음식 검색 모달 */}
-      <Modal
-        visible={isSearchModalVisible}
-        animationType="slide"
-        onRequestClose={closeSearchModal}
-      >
-        <View className="flex-1 bg-white">
-          {/* 모달 헤더 */}
-          <View className="pt-14 px-5 pb-4 bg-white border-b border-gray-200">
-            <View className="flex-row items-center justify-between">
-              <TouchableOpacity onPress={closeSearchModal}>
-                <Text className="text-lg text-blue-500">취소</Text>
-              </TouchableOpacity>
-              <Text className="text-xl font-bold">음식 검색</Text>
-              <View style={{ width: 50 }} />
-            </View>
-          </View>
-          
-          {/* 음식 검색 컴포넌트 */}
-          <View className="flex-1 px-5">
-            <FoodSearchComponent
-              onFoodSelect={handleFoodSelect}
-              placeholder={`${getTitle()}에 추가할 음식을 검색하세요`}
-            />
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }

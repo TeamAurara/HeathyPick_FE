@@ -2,12 +2,15 @@ import Constants from 'expo-constants';
 
 // API 설정
 export const API_CONFIG = {
-  // app.config.js에서 백엔드 URL 가져오기
-  BASE_URL: Constants.expoConfig?.extra?.backendUrl || 'https://healthpick.store',
+  // 우선순위: .env(EXPO_PUBLIC_BACKEND_URL) > app.config.js(extra.backendUrl) > 기본값
+  BASE_URL: process.env.EXPO_PUBLIC_BACKEND_URL
+    || (Constants.expoConfig as any)?.extra?.backendUrl
+    || 'https://healthpick.store',
   
   // API 엔드포인트
   ENDPOINTS: {
     FOOD_SEARCH: '/api/foods/search',
+    RECORD_FOOD: (userId: number) => `/records/${userId}/food`,
   },
   
   // API 헤더
@@ -26,10 +29,18 @@ console.log('⚙️ API 설정 로드:', {
 
 // API URL 생성 함수
 export const createApiUrl = (endpoint: string): string => {
-  const fullUrl = `${API_CONFIG.BASE_URL}${endpoint}`;
+  // 1) BASE 정규화: 끝 슬래시 제거
+  let base = (API_CONFIG.BASE_URL || '').replace(/\/+$/, '');
+  // 2) 엔드포인트 정규화: 앞에 슬래시 보장
+  let ep = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  // 3) BASE가 /api로 끝나고, 엔드포인트가 /api로 시작하면 접두 /api 제거
+  if (/\/api\/?$/.test(base) && /^\/api(\/|$)/.test(ep)) {
+    ep = ep.replace(/^\/api/, '');
+  }
+  const fullUrl = `${base}${ep}`;
   console.log('🔗 API URL 생성:', {
-    baseUrl: API_CONFIG.BASE_URL,
-    endpoint: endpoint,
+    baseUrl: base,
+    endpoint: ep,
     fullUrl: fullUrl
   });
   return fullUrl;

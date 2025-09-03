@@ -15,6 +15,7 @@ interface SearchedFoodData {
   protein: number;
   fat: number;
   brand?: string;
+  foodId?: number; // 검색 API의 foodId 보관
 }
 
 interface MealStore {

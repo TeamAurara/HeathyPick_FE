@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useRecordFoodMutation } from '../../hooks/record/mutation/useRecordFoodMutation';
 import { useRecordSelfMutation } from '../../hooks/record/mutation/useRecordSelfMutation';
 import { useMealStore } from '../../stores/mealStore';
 
@@ -26,6 +27,7 @@ export default function AddFoodScreen() {
   const searchedFood = useMealStore((state) => state.searchedFood);
   const clearSearchedFood = useMealStore((state) => state.clearSearchedFood);
   const { mutate, isPending, error, isSuccess } = useRecordSelfMutation();
+  const { mutate: saveSearchedFood } = useRecordFoodMutation();
 
   // 컴포넌트 마운트 시 userId 가져오기
   useEffect(() => {
@@ -92,32 +94,53 @@ export default function AddFoodScreen() {
       intakeTimeType: 'BREAKFAST' as const // 기본값, 필요시 선택 옵션 추가 가능
     };
 
-    // API 호출
-    mutate({
-      userId,
-      foodData
-    }, {
-      onSuccess: (data) => {
-        console.log('음식 저장 성공:', data);
-        
-        // 로컬 상태에도 추가 (기존 기능 유지)
-        const newFoodData = { 
-          name: foodName, 
-          calories: calories || '0', 
-          carbs: carbs || '0', 
-          protein: protein || '0', 
-          fat: fat || '0' 
-        };
-        addMealData(newFoodData);
-        
-        Alert.alert('성공', '음식이 성공적으로 저장되었습니다.');
-        router.back();
-      },
-      onError: (error) => {
-        console.error('음식 저장 실패:', error);
-        Alert.alert('오류', '음식 저장에 실패했습니다. 다시 시도해주세요.');
-      }
-    });
+    // 저장 분기: 검색으로 foodId를 얻었다면 검색 저장 API 사용, 아니면 커스텀 저장 API 사용
+    if (searchedFood?.foodId) {
+      saveSearchedFood({
+        userId,
+        body: { foodId: searchedFood.foodId, intakeTimeType: 'BREAKFAST' }
+      }, {
+        onSuccess: () => {
+          const newFoodData = { 
+            name: foodName, 
+            calories: calories || '0', 
+            carbs: carbs || '0', 
+            protein: protein || '0', 
+            fat: fat || '0' 
+          };
+          addMealData(newFoodData);
+          Alert.alert('성공', '검색한 음식이 저장되었습니다.');
+          router.back();
+        },
+        onError: (e) => {
+          console.error('검색 음식 저장 실패:', e);
+          Alert.alert('오류', '검색 음식 저장에 실패했습니다.');
+        }
+      });
+    } else {
+      mutate({
+        userId,
+        foodData
+      }, {
+        onSuccess: (data) => {
+          console.log('음식 저장 성공:', data);
+          const newFoodData = { 
+            name: foodName, 
+            calories: calories || '0', 
+            carbs: carbs || '0', 
+            protein: protein || '0', 
+            fat: fat || '0' 
+          };
+          addMealData(newFoodData);
+          Alert.alert('성공', '음식이 성공적으로 저장되었습니다.');
+          router.back();
+        },
+        onError: (error) => {
+          console.error('음식 저장 실패:', error);
+          Alert.alert('오류', '음식 저장에 실패했습니다. 다시 시도해주세요.');
+        }
+      });
+    }
   };
 
   // 에러 상태 처리
