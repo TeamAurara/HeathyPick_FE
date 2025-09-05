@@ -160,6 +160,15 @@ export default function RecordScreen() {
     //   setWeightData(data.weight);
     // });
   }, [currentDate, getSupplement]);
+
+  // 영양제 데이터 자동 업데이트를 위한 useEffect
+  useEffect(() => {
+    const dateKey = formatDateKey(currentDate);
+    const supplementsFromStore = getSupplement(dateKey);
+    if (supplementsFromStore.length > 0) {
+      setSupplementData(supplementsFromStore);
+    }
+  }, [currentDate, getSupplement]);
   
   // 날짜 포맷팅 함수
   const formatDate = (date: Date) => {
@@ -223,14 +232,20 @@ export default function RecordScreen() {
     const dateKey = formatDateKey(currentDate);
     toggleTaken(dateKey, supplementId);
     
-    // 상태 업데이트를 위해 데이터 다시 불러오기
-    const updatedSupplements = getSupplement(dateKey);
-    setSupplementData(updatedSupplements);
+    // useEffect에서 자동으로 업데이트되므로 여기서는 별도 처리 불필요
   };
   
   // 영양제 추가 핸들러
   const handleAddSupplement = () => {
     setIsSupplementModalVisible(true);
+  };
+
+  // 복용 시간 설정 핸들러
+  const handleSchedulePress = (supplementName: string) => {
+    router.push({
+      pathname: '/meal/SupplementTimeSettingScreen',
+      params: { name: supplementName }
+    });
   };
   
   // 영양제 저장 핸들러
@@ -241,9 +256,7 @@ export default function RecordScreen() {
     // 모달 닫기
     setIsSupplementModalVisible(false);
     
-    // 상태 업데이트를 위해 데이터 다시 불러오기
-    const updatedSupplements = getSupplement(dateKey);
-    setSupplementData(updatedSupplements);
+    // useEffect에서 자동으로 업데이트되므로 여기서는 별도 처리 불필요
   };
 
   // 음식 추가 핸들러 (API 기반)
@@ -476,6 +489,7 @@ export default function RecordScreen() {
                 timeToTake={supplement.timeToTake}
                 isTaken={supplement.isTaken}
                 onPress={() => handleSupplementCardPress(supplement.id)}
+                onSchedulePress={() => handleSchedulePress(supplement.name)}
               />
             ))}
           </View>

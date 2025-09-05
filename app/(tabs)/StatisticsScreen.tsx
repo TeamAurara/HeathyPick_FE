@@ -3,6 +3,7 @@ import React from "react";
 import { ScrollView, Text, View } from "react-native";
 import StatsSummaryCard from "../../components/ui/StatsSummaryCard";
 import WeeklyStatsChart from "../../components/ui/WeeklyStatsChart";
+import WeeklySummaryCard from "../../components/ui/WeeklySummaryCard";
 
 export default function StatisticsScreen() {
   return (
@@ -52,6 +53,9 @@ export default function StatisticsScreen() {
 
         {/* 주간 차트 */}
         <WeeklyStatsChart />
+
+        {/* AI 주간 요약 */}
+        <WeeklySummaryCard />
 
         {/* 추가 통계 정보 */}
         <View className="bg-white rounded-2xl p-4 mx-4 mb-6 shadow-sm">

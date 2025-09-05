@@ -11,6 +11,7 @@ export const API_CONFIG = {
   ENDPOINTS: {
     FOOD_SEARCH: '/api/foods/search',
     RECORD_FOOD: (userId: number) => `/records/${userId}/food`,
+    DAILY_RECORDS: (userId: number) => `/records/${userId}/daily`,
   },
   
   // API 헤더
