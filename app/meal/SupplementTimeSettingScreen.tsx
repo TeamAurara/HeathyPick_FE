@@ -2,7 +2,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { NotificationMockup } from '@/components/ui/NotificationMockup';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Animated, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Animated, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 // 네비게이션 헤더 숨기기
 export const options = {
@@ -12,11 +12,14 @@ export const options = {
 export default function SupplementTimeSettingScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const [selectedTime, setSelectedTime] = useState('09:00');
+  const [selectedTime, setSelectedTime] = useState('05:30');
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
   const [supplementName, setSupplementName] = useState(params.name as string || '영양제');
   const [showNotificationMockup, setShowNotificationMockup] = useState(false);
   const [toggleAnim] = useState(new Animated.Value(0));
+  const [inputMode, setInputMode] = useState<'grid' | 'input'>('grid');
+  const [timeInput, setTimeInput] = useState('05:30');
+  const [inputError, setInputError] = useState('');
 
   const handleGoBack = () => {
     router.back();
@@ -56,6 +59,36 @@ export default function SupplementTimeSettingScreen() {
       duration: 200,
       useNativeDriver: false,
     }).start();
+  };
+
+  const validateTimeInput = (time: string): boolean => {
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])$/;
+    return timeRegex.test(time);
+  };
+
+  const handleTimeInputChange = (text: string) => {
+    setTimeInput(text);
+    setInputError('');
+    
+    if (validateTimeInput(text)) {
+      setSelectedTime(text);
+    }
+  };
+
+  const handleTimeInputBlur = () => {
+    if (timeInput && !validateTimeInput(timeInput)) {
+      setInputError('올바른 시간 형식을 입력해주세요 (HH:MM)');
+      setTimeInput(selectedTime);
+    } else if (timeInput) {
+      setSelectedTime(timeInput);
+    }
+  };
+
+  const toggleInputMode = () => {
+    setInputMode(inputMode === 'grid' ? 'input' : 'grid');
+    if (inputMode === 'input') {
+      setTimeInput(selectedTime);
+    }
   };
 
   // 시간 옵션 생성
@@ -103,44 +136,73 @@ export default function SupplementTimeSettingScreen() {
 
         {/* 시간 선택 섹션 */}
         <View className="mb-8">
-          <Text className="text-lg font-bold mb-4">복용 시간 선택</Text>
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-lg font-bold">복용 시간 선택</Text>
+            <TouchableOpacity
+              onPress={toggleInputMode}
+              className="px-3 py-1 bg-blue-100 rounded-full"
+            >
+              <Text className="text-blue-600 text-sm font-medium">
+                {inputMode === 'grid' ? '직접 입력' : '그리드 선택'}
+              </Text>
+            </TouchableOpacity>
+          </View>
           
           {/* 현재 선택된 시간 */}
-          <View className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <Text className="text-center text-2xl font-bold text-green-600">
+          <View className="mb-4 p-6 bg-gray-100 rounded-lg">
+            <Text className="text-center text-3xl font-bold text-green-600 mb-1">
               {selectedTime}
             </Text>
-            <Text className="text-center text-sm text-gray-500 mt-1">
+            <Text className="text-center text-sm text-gray-500">
               선택된 복용 시간
             </Text>
           </View>
 
-          {/* 시간 선택 그리드 */}
-          <View className="max-h-64">
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View className="flex-row flex-wrap justify-between">
-                {timeOptions.map((time) => (
-                  <TouchableOpacity
-                    key={time}
-                    onPress={() => setSelectedTime(time)}
-                    className={`w-[30%] p-3 m-1 rounded-lg border ${
-                      selectedTime === time
-                        ? 'bg-green-500 border-green-500'
-                        : 'bg-white border-gray-300'
-                    }`}
-                  >
-                    <Text
-                      className={`text-center font-medium ${
-                        selectedTime === time ? 'text-white' : 'text-gray-700'
+          {/* 시간 입력 또는 그리드 선택 */}
+          {inputMode === 'input' ? (
+            <View className="mb-4">
+              <TextInput
+                value={timeInput}
+                onChangeText={handleTimeInputChange}
+                onBlur={handleTimeInputBlur}
+                placeholder="HH:MM"
+                className="w-full p-4 border border-gray-300 rounded-lg text-center text-lg font-medium"
+                keyboardType="numeric"
+                maxLength={5}
+              />
+              {inputError ? (
+                <Text className="text-red-500 text-sm mt-2 text-center">
+                  {inputError}
+                </Text>
+              ) : null}
+            </View>
+          ) : (
+            <View className="max-h-64">
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <View className="flex-row flex-wrap justify-between">
+                  {timeOptions.map((time) => (
+                    <TouchableOpacity
+                      key={time}
+                      onPress={() => setSelectedTime(time)}
+                      className={`w-[30%] p-4 m-1 rounded-lg ${
+                        selectedTime === time
+                          ? 'bg-green-500'
+                          : 'bg-gray-100'
                       }`}
                     >
-                      {time}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
+                      <Text
+                        className={`text-center font-medium ${
+                          selectedTime === time ? 'text-white' : 'text-gray-700'
+                        }`}
+                      >
+                        {time}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          )}
         </View>
 
         {/* 알림 설정 섹션 */}
