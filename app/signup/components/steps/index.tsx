@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 export { default as ActivityStep } from './ActivityStep';
 export { default as AgeStep } from './AgeStep';
+export { default as AgreementStep } from './AgreementStep';
 export { default as BodyInfoStep } from './BodyInfoStep';
 export { default as CKDStep } from './CKDStep';
 export { default as GenderStep } from './GenderStep';

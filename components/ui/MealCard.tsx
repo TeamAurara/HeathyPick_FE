@@ -2,8 +2,10 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface FoodItem {
-  name: string;
+  name?: string;
+  menuName?: string;
   kcal?: number;
+  calories?: number;
 }
 
 interface MealCardProps {
@@ -48,7 +50,7 @@ export const MealCard: React.FC<MealCardProps> = ({
             {/* 최대 2개까지만 표시 */}
             {foodItems.slice(0, 2).map((item, index) => (
               <Text key={index} className="text-gray-500 text-sm" numberOfLines={1} ellipsizeMode="tail">
-                • {item.name}
+                • {item.name || item.menuName}
               </Text>
             ))}
             {/* 추가 항목이 있으면 표시, 없으면 빈 공간 유지 */}

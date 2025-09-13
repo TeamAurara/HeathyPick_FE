@@ -1,9 +1,10 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Food } from '@/constants/schemas/food';
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useMealStore } from '../../stores/mealStore';
 
 // 네비게이션 헤더 숨기기
 export const options = {
@@ -15,6 +16,9 @@ export default function MealDetailScreen() {
   const params = useLocalSearchParams();
   const [mealData, setMealData] = useState<Food[]>([]); // 먹은 음식 데이터
   const [mealType, setMealType] = useState<string>(''); // 식사 타입
+  
+  // 스토어에서 음식 데이터 가져오기
+  const getMealDataByDate = useMealStore((state) => state.getMealDataByDate);
 
   const handleGoBack = () => {
     router.back();
@@ -29,10 +33,46 @@ export default function MealDetailScreen() {
     }
   }, [params.type]);
 
+  // 음식 데이터 로드 함수
+  const loadMealData = useCallback(() => {
+    const today = new Date();
+    const dateKey = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+    const currentMealType = mealType || 'breakfast'; // 기본값
+    
+    const storedMealData = getMealDataByDate(dateKey, currentMealType);
+    
+    // MealData를 Food 형식으로 변환
+    const convertedMealData: Food[] = storedMealData.map((meal, index) => ({
+      foodId: index + 1, // 임시 ID 생성
+      menuName: meal.name,
+      calories: parseInt(meal.calories),
+      carbohydrate: parseInt(meal.carbs),
+      protein: parseInt(meal.protein),
+      fat: parseInt(meal.fat)
+    }));
+    
+    setMealData(convertedMealData);
+  }, [mealType, getMealDataByDate]);
+
+  // 스토어에서 음식 데이터 로드
+  useEffect(() => {
+    loadMealData();
+  }, [loadMealData]);
+
+  // 화면이 포커스될 때마다 데이터 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      loadMealData();
+    }, [loadMealData])
+  );
+
   // "추가하기" 버튼: AddFoodScreen으로 이동
   const goToAddFoodScreen = () => {
-    // 필요한 경우 식사 타입/날짜를 전달
-    router.push({ pathname: '/meal/AddFoodScreen' });
+    // 식사 타입을 파라미터로 전달
+    router.push({ 
+      pathname: '/meal/AddFoodScreen',
+      params: { type: mealType || 'breakfast' }
+    });
   };
 
   const getTitle = () => {
@@ -112,7 +152,7 @@ export default function MealDetailScreen() {
       <View className="absolute bottom-8 left-0 right-0 px-6">
         <TouchableOpacity
           onPress={goToAddFoodScreen}
-          className="bg-white border border-green-500 py-4 rounded-full flex-row justify-center items-center"
+          className="bg-white border border-green-500 mb-5 py-4 rounded-full flex-row justify-center items-center"
         >
           <Text className="text-green-500 font-medium text-lg">
             + 음식 추가하기

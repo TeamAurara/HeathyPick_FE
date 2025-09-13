@@ -65,7 +65,7 @@ export default function KakaoScreen({ onLoginSuccess }: KakaoScreenProps) {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
+        <SafeAreaView className="flex-1 bg-[#55B339]">
             <View className="flex-1 justify-center items-center">
                 <View className="flex-1 justify-center items-center">
                     <AppLogo width={240} height={224} />

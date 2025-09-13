@@ -25,6 +25,10 @@ export default function WeeklyStatsChart({ data }: WeeklyStatsChartProps) {
   };
 
   const chartData = data || defaultData;
+  
+  // 디버깅을 위한 콘솔 로그
+  console.log('WeeklyStatsChart 데이터:', chartData);
+  console.log('전달받은 data prop:', data);
 
   const chartConfig = {
     backgroundColor: '#ffffff',
