@@ -5,7 +5,6 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
-import "react-native-reanimated";
 import "../global.css";
 
 // QueryClient 인스턴스 생성

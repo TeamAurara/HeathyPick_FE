@@ -1,27 +1,44 @@
 import { create } from 'zustand';
 
-type MealData = {
+interface MealData {
   name: string;
   calories: string;
   carbs: string;
   protein: string;
   fat: string;
-};
+}
 
-type MealStore = {
-  mealType: string;
-  mealDate: string;
+interface SearchedFoodData {
+  menuName: string;
+  calorie: number;
+  carbohydrate: number;
+  protein: number;
+  fat: number;
+  brand?: string;
+  foodId?: number; // 검색 API의 foodId 보관
+}
+
+interface MealStore {
   mealData: MealData[];
-  setMealType: (type: string) => void;
-  setMealDate: (date: string) => void;
-  addMealData: (newData: MealData) => void;
-};
+  searchedFood: SearchedFoodData | null;
+  addMealData: (data: MealData) => void;
+  setSearchedFood: (food: SearchedFoodData | null) => void;
+  clearSearchedFood: () => void;
+}
 
 export const useMealStore = create<MealStore>((set) => ({
-  mealType: '',
-  mealDate: '',
   mealData: [],
-  setMealType: (type) => set({ mealType: type }),
-  setMealDate: (date) => set({ mealDate: date }),
-  addMealData: (newData) => set((state) => ({ mealData: [...state.mealData, newData] })),
+  searchedFood: null,
+  addMealData: (data) =>
+    set((state) => ({
+      mealData: [...state.mealData, data],
+    })),
+  setSearchedFood: (food) =>
+    set(() => ({
+      searchedFood: food,
+    })),
+  clearSearchedFood: () =>
+    set(() => ({
+      searchedFood: null,
+    })),
 })); 

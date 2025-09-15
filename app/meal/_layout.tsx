@@ -16,6 +16,12 @@ export default function MealLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="FoodSearchScreen"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 } 
