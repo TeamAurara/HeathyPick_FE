@@ -18,7 +18,6 @@ export default {
       },
       edgeToEdgeEnabled: true,
       package: "com.healthypick.app",
-      versionCode: 2,
     },
     web: {
       bundler: "metro",

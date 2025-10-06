@@ -1,13 +1,20 @@
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import { IconSymbol } from "@/components/ui/IconSymbol";
 // import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Image } from 'expo-image';
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image } from "expo-image";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 // 백엔드 API는 현재 사용하지 않으므로 주석 처리
 // import { useRecordFoodMutation } from '../../hooks/record/mutation/useRecordFoodMutation';
 // import { useRecordSelfMutation } from '../../hooks/record/mutation/useRecordSelfMutation';
-import { useMealStore } from '../../stores/mealStore';
+import { useMealStore } from "../../stores/mealStore";
 
 // 네비게이션 헤더 숨기기
 export const options = {
@@ -19,11 +26,11 @@ export default function AddFoodScreen() {
   const params = useLocalSearchParams();
   // const [userId, setUserId] = useState<number | null>(null);
 
-  const [foodName, setFoodName] = useState('');
-  const [calories, setCalories] = useState('');
-  const [carbs, setCarbs] = useState('');
-  const [protein, setProtein] = useState('');
-  const [fat, setFat] = useState('');
+  const [foodName, setFoodName] = useState("");
+  const [calories, setCalories] = useState("");
+  const [carbs, setCarbs] = useState("");
+  const [protein, setProtein] = useState("");
+  const [fat, setFat] = useState("");
 
   const addMealData = useMealStore((state) => state.addMealData);
   const addMealDataByDate = useMealStore((state) => state.addMealDataByDate);
@@ -59,11 +66,11 @@ export default function AddFoodScreen() {
         setCarbs(searchedFood.carbohydrate.toString());
         setProtein(searchedFood.protein.toString());
         setFat(searchedFood.fat.toString());
-        
+
         // 데이터 사용 후 클리어
         clearSearchedFood();
-        
-        console.log('검색된 음식 데이터 적용:', searchedFood.menuName);
+
+        console.log("검색된 음식 데이터 적용:", searchedFood.menuName);
       }
     }, [searchedFood, clearSearchedFood])
   );
@@ -73,37 +80,37 @@ export default function AddFoodScreen() {
   };
 
   const handleSearch = () => {
-    router.push('/meal/FoodSearchScreen' as any);
+    router.push("/meal/FoodSearchScreen" as any);
   };
 
   const handleAddFood = () => {
     // 필수 필드 검증
     if (!foodName.trim()) {
-      Alert.alert('알림', '음식 이름을 입력해주세요.');
+      Alert.alert("알림", "음식 이름을 입력해주세요.");
       return;
     }
 
     // 현재 날짜와 식사 타입 가져오기 (라우터 파라미터에서)
     const today = new Date();
-    const dateKey = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
-    const mealType = (params.type as string) || 'breakfast'; // 파라미터에서 받거나 기본값
+    const dateKey = today.toISOString().split("T")[0]; // YYYY-MM-DD 형식
+    const mealType = (params.type as string) || "breakfast"; // 파라미터에서 받거나 기본값
 
     // 영양 정보 기본값 설정 (입력되지 않은 경우 0으로 설정)
-    const newFoodData = { 
-      name: foodName.trim(), 
-      calories: calories || '0', 
-      carbs: carbs || '0', 
-      protein: protein || '0', 
-      fat: fat || '0' 
+    const newFoodData = {
+      name: foodName.trim(),
+      calories: calories || "0",
+      carbs: carbs || "0",
+      protein: protein || "0",
+      fat: fat || "0",
     };
 
     // 스토어에 날짜별로 음식 데이터 저장
     addMealDataByDate(dateKey, mealType, newFoodData);
-    
+
     // 기존 방식도 유지 (호환성을 위해)
     addMealData(newFoodData);
-    
-    Alert.alert('성공', '음식이 성공적으로 저장되었습니다.');
+
+    Alert.alert("성공", "음식이 성공적으로 저장되었습니다.");
     router.back();
   };
 
@@ -124,7 +131,7 @@ export default function AddFoodScreen() {
           </TouchableOpacity>
           <View className="flex-row items-center justify-center flex-1">
             <Image
-              source={{ uri: 'https://via.placeholder.com/40' }}
+              source={{ uri: "https://via.placeholder.com/40" }}
               style={{ width: 40, height: 40, borderRadius: 20 }}
               className="mr-2"
             />
@@ -137,7 +144,9 @@ export default function AddFoodScreen() {
       {/* 입력 폼 */}
       <ScrollView className="flex-1 px-5 py-4">
         <View className="mb-6">
-          <Text className="text-green-500 font-medium mb-2">음식 이름(필수)</Text>
+          <Text className="text-green-500 font-medium mb-2">
+            음식 이름(필수)
+          </Text>
           <View className="flex-row items-center border-b border-green-500 pb-2">
             <TextInput
               value={foodName}
@@ -195,9 +204,7 @@ export default function AddFoodScreen() {
 
           <View className="flex-row justify-between mb-6">
             <View className="w-[48%]">
-              <Text className="text-green-500 font-medium mb-2">
-                단백질(g)
-              </Text>
+              <Text className="text-green-500 font-medium mb-2">단백질(g)</Text>
               <View className="border-b border-gray-300 pb-2">
                 <TextInput
                   value={protein}
