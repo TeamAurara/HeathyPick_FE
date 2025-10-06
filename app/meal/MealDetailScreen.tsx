@@ -1,8 +1,9 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Food } from '@/constants/schemas/food';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import React from 'react';
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useMealStore } from '../../stores/mealStore';
 
 // 네비게이션 헤더 숨기기
@@ -12,26 +13,70 @@ export const options = {
 
 export default function MealDetailScreen() {
   const router = useRouter();
-  const { mealType: type, mealDate: date, mealData } = useMealStore();
+  const params = useLocalSearchParams();
+  const [mealData, setMealData] = useState<Food[]>([]); // 먹은 음식 데이터
+  const [mealType, setMealType] = useState<string>(''); // 식사 타입
+  
+  // 스토어에서 음식 데이터 가져오기
+  const getMealDataByDate = useMealStore((state) => state.getMealDataByDate);
 
   const handleGoBack = () => {
     router.back();
   };
 
-  type MealDataType = {
-    name: string;
-    calories: string;
-    carbs: string;
-    protein: string;
-    fat: string;
-  };
 
+
+  // 라우터 파라미터에서 식사 타입과 날짜 가져오기
+  useEffect(() => {
+    if (params.type) {
+      setMealType(params.type as string);
+    }
+  }, [params.type]);
+
+  // 음식 데이터 로드 함수
+  const loadMealData = useCallback(() => {
+    const today = new Date();
+    const dateKey = today.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+    const currentMealType = mealType || 'breakfast'; // 기본값
+    
+    const storedMealData = getMealDataByDate(dateKey, currentMealType);
+    
+    // MealData를 Food 형식으로 변환
+    const convertedMealData: Food[] = storedMealData.map((meal, index) => ({
+      foodId: index + 1, // 임시 ID 생성
+      menuName: meal.name,
+      calories: parseInt(meal.calories),
+      carbohydrate: parseInt(meal.carbs),
+      protein: parseInt(meal.protein),
+      fat: parseInt(meal.fat)
+    }));
+    
+    setMealData(convertedMealData);
+  }, [mealType, getMealDataByDate]);
+
+  // 스토어에서 음식 데이터 로드
+  useEffect(() => {
+    loadMealData();
+  }, [loadMealData]);
+
+  // 화면이 포커스될 때마다 데이터 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      loadMealData();
+    }, [loadMealData])
+  );
+
+  // "추가하기" 버튼: AddFoodScreen으로 이동
   const goToAddFoodScreen = () => {
-    router.push('/meal/AddFoodScreen');
+    // 식사 타입을 파라미터로 전달
+    router.push({ 
+      pathname: '/meal/AddFoodScreen',
+      params: { type: mealType || 'breakfast' }
+    });
   };
 
   const getTitle = () => {
-    switch (type) {
+    switch (mealType) {
       case 'breakfast': return '아침';
       case 'lunch':     return '점심';
       case 'dinner':    return '저녁';
@@ -55,17 +100,8 @@ export default function MealDetailScreen() {
         </View>
       </View>
 
-      {/* 검색창 */}
-      <View className="px-5 py-3">
-        <View className="flex-row items-center justify-between bg-gray-100 rounded-full px-4 py-2">
-          <TextInput
-            className="flex-1 text-base text-gray-500"
-            placeholder="음식을 검색해보세요"
-            placeholderTextColor="#999"
-          />
-          <IconSymbol name="magnifyingglass" size={20} color="#999" />
-        </View>
-      </View>
+      {/* 안내 문구 영역 (필요 시 유지) */}
+      <View className="px-5 py-3" />
 
       {/* 본문 */}
       <ScrollView className="flex-1">
@@ -87,16 +123,16 @@ export default function MealDetailScreen() {
           </View>
         ) : (
           <View className="px-5 py-10">
-            {mealData.map((meal: MealDataType, idx: number) => (
+            {mealData.map((meal: Food, idx: number) => (
               <View key={idx} className="mb-4 p-4 bg-green-50 border border-green-500 shadow-md rounded-lg">
-                <Text className="text-lg font-bold mb-2 text-green-600">{meal.name}</Text>
+                <Text className="text-lg font-bold mb-2 text-green-600">{meal.menuName}</Text>
                 <View className="flex-row items-center mb-1">
                   <IconSymbol name="flame" size={16} color="green" />
                   <Text className="text-sm text-gray-700 ml-2">칼로리: {meal.calories} kcal</Text>
                 </View>
                 <View className="flex-row items-center mb-1">
                   <IconSymbol name="leaf" size={16} color="green" />
-                  <Text className="text-sm text-gray-700 ml-2">탄수화물: {meal.carbs} g</Text>
+                  <Text className="text-sm text-gray-700 ml-2">탄수화물: {meal.carbohydrate} g</Text>
                 </View>
                 <View className="flex-row items-center mb-1">
                   <IconSymbol name="fork.knife" size={16} color="green" />
@@ -112,11 +148,11 @@ export default function MealDetailScreen() {
         )}
       </ScrollView>
 
-      {/* 하단 버튼 */}
+      {/* 하단 버튼: AddFoodScreen으로 이동 */}
       <View className="absolute bottom-8 left-0 right-0 px-6">
         <TouchableOpacity
           onPress={goToAddFoodScreen}
-          className="bg-white border border-green-500 py-4 rounded-full flex-row justify-center items-center"
+          className="bg-white border border-green-500 mb-5 py-4 rounded-full flex-row justify-center items-center"
         >
           <Text className="text-green-500 font-medium text-lg">
             + 음식 추가하기

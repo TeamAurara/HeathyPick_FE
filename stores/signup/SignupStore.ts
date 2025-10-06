@@ -28,6 +28,9 @@ interface SignUpState {
   weight: string;
   targetWeight: string;
   
+  // 약관 동의
+  agreementAccepted: boolean;
+  
   // 회원가입 진행 상태
   currentStep: number;
   isCompleted: boolean;
@@ -41,6 +44,7 @@ interface SignUpState {
   setHeight: (height: string) => void;
   setWeight: (weight: string) => void;
   setTargetWeight: (targetWeight: string) => void;
+  setAgreementAccepted: (accepted: boolean) => void;
   
   // 단계 관리
   nextStep: () => void;
@@ -67,6 +71,7 @@ export const useSignUpStore = create<SignUpState>((set, get) => ({
   height: '',
   weight: '',
   targetWeight: '',
+  agreementAccepted: false,
   currentStep: 1,
   isCompleted: false,
   
@@ -79,6 +84,7 @@ export const useSignUpStore = create<SignUpState>((set, get) => ({
   setHeight: (height) => set({ height }),
   setWeight: (weight) => set({ weight }),
   setTargetWeight: (targetWeight) => set({ targetWeight }),
+  setAgreementAccepted: (accepted) => set({ agreementAccepted: accepted }),
   
   // 단계 관리
   nextStep: () => {
@@ -108,6 +114,7 @@ export const useSignUpStore = create<SignUpState>((set, get) => ({
     height: '',
     weight: '',
     targetWeight: '',
+    agreementAccepted: false,
     currentStep: 1,
     isCompleted: false
   }),
@@ -123,7 +130,8 @@ export const useSignUpStore = create<SignUpState>((set, get) => ({
       ckdStage,
       height, 
       weight, 
-      targetWeight 
+      targetWeight,
+      agreementAccepted
     } = get();
     
     switch (currentStep) {
@@ -139,6 +147,8 @@ export const useSignUpStore = create<SignUpState>((set, get) => ({
         return ckdStage !== null;
       case 6:
         return height.trim() !== '' && weight.trim() !== '' && targetWeight.trim() !== '';
+      case 7:
+        return agreementAccepted;
       default:
         return true;
     }
