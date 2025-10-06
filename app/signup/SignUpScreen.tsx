@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Platform, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { StepIndicator } from './components/common/index';
-import { ActivityStep, AgeStep, BodyInfoStep, CKDStep, GenderStep, NicknameStep, SuccessStep } from './components/steps/index';
+import { ActivityStep, AgeStep, AgreementStep, BodyInfoStep, CKDStep, GenderStep, NicknameStep, SuccessStep } from './components/steps/index';
 
 interface SignUpScreenProps {
   onOnboardingComplete?: () => void;
@@ -53,7 +53,7 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
     getSignUpData
   } = useSignUpStore();
   
-  const totalSteps = 6;
+  const totalSteps = 7;
   
   const handleBack = () => {
     if (isCompleted) {
@@ -130,6 +130,8 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
         return <CKDStep />;
       case 6:
         return <BodyInfoStep />;
+      case 7:
+        return <AgreementStep />;
       default:
         return null;
     }
@@ -137,7 +139,7 @@ export default function SignUpScreen({ onOnboardingComplete }: SignUpScreenProps
 
   const getButtonText = () => {
     if (currentStep === totalSteps) {
-      return isLoading ? '처리 중...' : '목표 설정 완료';
+      return isLoading ? '처리 중...' : '회원가입 완료';
     }
     return '다음';
   };

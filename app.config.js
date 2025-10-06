@@ -2,27 +2,27 @@ export default {
   expo: {
     name: "healthypick",
     slug: "healthypick",
-    version: "1.0.0",
+    version: "1.0.1",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "healthypick",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
     },
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
-        backgroundColor: "#ffffff"
+        backgroundColor: "#ffffff",
       },
       edgeToEdgeEnabled: true,
-      package: "com.yongkie.healthypick"
+      package: "com.healthypick.app",
     },
     web: {
       bundler: "metro",
       output: "static",
-      favicon: "./assets/images/favicon.png"
+      favicon: "./assets/images/favicon.png",
     },
     plugins: [
       "expo-router",
@@ -32,19 +32,20 @@ export default {
           image: "./assets/images/splash-icon.png",
           imageWidth: 200,
           resizeMode: "contain",
-          backgroundColor: "#ffffff"
-        }
-      ]
+          backgroundColor: "#ffffff",
+        },
+      ],
     ],
     experiments: {
-      typedRoutes: true
+      typedRoutes: true,
     },
     extra: {
       router: {},
       eas: {
-        projectId: "ceac6899-5bc3-4e03-98af-030beb23b953"
+        projectId: "9e9efa91-7cd1-40c9-97e8-c92735250368",
       },
-      backendUrl: "https://healthpick.store"
-    }
-  }
+
+      backendUrl: "https://healthpick.store",
+    },
+  },
 };
