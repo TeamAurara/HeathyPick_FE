@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -22,30 +22,35 @@ const RootLayout = () => {
     const checkLoginStatus = async () => {
       try {
         // AsyncStorage에서 토큰 확인
-        const accessToken = await AsyncStorage.getItem('accessToken');
-        const user = await AsyncStorage.getItem('user');
-        
+        const accessToken = await AsyncStorage.getItem("accessToken");
+        const user = await AsyncStorage.getItem("user");
+
         // 토큰과 사용자 정보가 있으면 로그인 상태로 설정
         if (accessToken && user) {
           // 토큰이 존재하면 로그인 상태로 설정
           try {
             const userData = JSON.parse(user);
             setIsLoggedIn(true);
-            console.log('userData', userData);
-            console.log('자동 로그인 성공:', userData.nickname);
+            console.log("userData", userData);
+            console.log("자동 로그인 성공:", userData.nickname);
           } catch (error) {
-            console.error('사용자 데이터 파싱 오류:', error);
+            console.error("사용자 데이터 파싱 오류:", error);
             // 파싱 오류 시 저장된 데이터 삭제
-            await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'user', 'userId']);
+            await AsyncStorage.multiRemove([
+              "accessToken",
+              "refreshToken",
+              "user",
+              "userId",
+            ]);
             setIsLoggedIn(false);
-            console.log('사용자 데이터 오류로 로그아웃 처리');
+            console.log("사용자 데이터 오류로 로그아웃 처리");
           }
         } else {
           setIsLoggedIn(false);
-          console.log('로그인 필요');
+          console.log("로그인 필요");
         }
       } catch (error) {
-        console.error('로그인 상태 확인 중 오류:', error);
+        console.error("로그인 상태 확인 중 오류:", error);
         setIsLoggedIn(false);
       } finally {
         setIsLoading(false);
@@ -82,14 +87,16 @@ const RootLayout = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen 
-          name="(tabs)" 
-          options={{ 
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="(tabs)"
+          options={{
             headerShown: false,
-            // 헤더 타이틀 숨김
             headerTitle: () => null,
-          }} 
+          }}
         />
+        <Stack.Screen name="meal" options={{ headerShown: false }} />
+        <Stack.Screen name="signup" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
