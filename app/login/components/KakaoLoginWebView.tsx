@@ -105,29 +105,36 @@ export default function KakaoLoginWebView({
 
         if (error.response) {
           // 서버가 2xx 범위를 벗어나는 상태 코드로 응답했습니다.
-          console.error("🚨 [Error Response] 서버가 응답했으나 에러가 발생했습니다.");
-          console.error(`- Status: ${error.response.status}`)
-          console.error(`- Data: ${JSON.stringify(error.response.data, null, 2)}`);
-          console.error(`- Headers: ${JSON.stringify(error.response.headers, null, 2)}`);
+          console.error(
+            "🚨 [Error Response] 서버가 응답했으나 에러가 발생했습니다."
+          );
+          console.error(`- Status: ${error.response.status}`);
+          console.error(
+            `- Data: ${JSON.stringify(error.response.data, null, 2)}`
+          );
+          console.error(
+            `- Headers: ${JSON.stringify(error.response.headers, null, 2)}`
+          );
           const errorMessage = `서버 에러: ${error.response.status}, 메시지: ${error.response.data?.message || error.message}`;
           setErrorInfo(errorMessage);
           onLoginError(errorMessage);
-
         } else if (error.request) {
           // 요청이 이루어졌으나 응답을 받지 못했습니다.
           // 'error.request'는 브라우저에서는 XMLHttpRequest 인스턴스, node.js에서는 http.ClientRequest 인스턴스입니다.
-          console.error("📡 [Error Request] 요청은 보냈으나, 서버로부터 응답이 없습니다.");
+          console.error(
+            "📡 [Error Request] 요청은 보냈으나, 서버로부터 응답이 없습니다."
+          );
           console.error("이 오류는 주로 다음과 같은 경우에 발생합니다:");
           console.error("1. 네트워크 연결 문제 (인터넷 끊김)");
           console.error("2. 백엔드 서버 다운");
           console.error("3. CORS 정책 위반 (웹 환경)");
           console.error("4. 요청 타임아웃 (timeout 설정 확인)");
           console.error("Full request object:", error.request);
-          const errorMessage = "서버에 연결할 수 없습니다. 네트워크를 확인해주세요.";
+          const errorMessage =
+            "서버에 연결할 수 없습니다. 네트워크를 확인해주세요.";
           setErrorInfo(errorMessage);
           onLoginError(errorMessage);
           return { success: false, isNetworkError: true };
-
         } else {
           // 요청을 설정하는 중에 에러가 발생했습니다.
           console.error("⚙️ [Error Message] 요청 설정 중 에러가 발생했습니다.");
@@ -139,10 +146,11 @@ export default function KakaoLoginWebView({
 
         console.log(`- Axios Config: ${JSON.stringify(error.config, null, 2)}`);
         console.error("-".repeat(30));
-
       } else {
         // Axios 에러가 아닌 다른 종류의 에러
-        console.error("💥 [Non-Axios Error] 일반 자바스크립트 에러가 발생했습니다.");
+        console.error(
+          "💥 [Non-Axios Error] 일반 자바스크립트 에러가 발생했습니다."
+        );
         console.error(error);
         setErrorInfo(String(error));
       }
@@ -223,7 +231,9 @@ export default function KakaoLoginWebView({
           } else {
             // 에러 처리는 sendCodeToBackend 내부에서 이미 수행되었으므로
             // 여기서는 추가적인 에러 메시지 호출이 필요 없습니다.
-            console.log("로그인 실패. 상세 에러는 sendCodeToBackend에서 출력됩니다.");
+            console.log(
+              "로그인 실패. 상세 에러는 sendCodeToBackend에서 출력됩니다."
+            );
           }
         } catch (error) {
           console.error("로그인 처리 중 오류:", error);
