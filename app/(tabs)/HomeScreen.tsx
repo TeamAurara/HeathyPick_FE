@@ -1,154 +1,366 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from "expo-router";
 import React, { useState } from "react";
-import { Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Ellipse, Path, Rect, Text as SvgText } from "react-native-svg";
+import Svg, { Circle } from "react-native-svg";
 
-function NutrientBar({ label, value, percent }: { label: string; value: string; percent: number }) {
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
+const isTablet = SCREEN_WIDTH >= 768;
+const maxContentWidth = isWeb ? 1200 : SCREEN_WIDTH;
+
+// 영양소 카드 컴포넌트
+function NutrientCard({ 
+  label, 
+  value, 
+  percent, 
+  index 
+}: { 
+  label: string; 
+  value: string; 
+  percent: number;
+  index: number;
+}) {
+  const colors = [
+    { bg: '#FEF3C7', text: '#D97706', progress: '#FBBF24' }, // 탄수화물 - 노랑
+    { bg: '#DBEAFE', text: '#1E40AF', progress: '#60A5FA' }, // 단백질 - 파랑
+    { bg: '#FCE7F3', text: '#BE185D', progress: '#F472B6' }, // 지방 - 분홍
+    { bg: '#E0E7FF', text: '#4338CA', progress: '#818CF8' }, // 나트륨 - 보라
+    { bg: '#D1FAE5', text: '#065F46', progress: '#34D399' }, // 칼륨 - 초록
+    { bg: '#FED7AA', text: '#9A3412', progress: '#FB923C' }, // 인 - 주황
+  ];
+
+  const color = colors[index % colors.length];
+
   return (
-    <View className="flex-1 items-center mb-6 px-1 min-w-[90px]">
-      <Text className="text-[15px] font-semibold mb-1 whitespace-nowrap">{label}</Text>
-      <View className="w-full h-4 bg-gray-200 rounded-full mb-1 overflow-hidden flex-row items-center">
-        <View className="h-4 bg-green-400 rounded-full" style={{ width: `${percent * 100}%` }} />
+    <View 
+      className="rounded-2xl p-5 mb-3"
+      style={{ 
+        backgroundColor: color.bg,
+        width: isTablet ? '48%' : '100%',
+      }}
+    >
+      <View className="flex-row items-center justify-between mb-3">
+        <Text className={`font-bold ${isTablet ? 'text-lg' : 'text-base'}`} style={{ color: color.text }}>
+          {label}
+        </Text>
+        <Text className={`font-bold ${isTablet ? 'text-lg' : 'text-base'}`} style={{ color: color.text }}>
+          {value}
+        </Text>
       </View>
-      <Text className="text-xs font-bold text-green-600 mt-1">{value}</Text>
+      <View 
+        className="rounded-full overflow-hidden"
+        style={{ 
+          height: 10, 
+          backgroundColor: 'rgba(255, 255, 255, 0.5)',
+        }}
+      >
+        <View 
+          className="h-full rounded-full"
+          style={{ 
+            width: `${Math.min(percent * 100, 100)}%`,
+            backgroundColor: color.progress,
+          }}
+        />
+      </View>
     </View>
   );
 }
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
+  const insets = useSafeAreaInsets();
+  
+  // 칼로리 데이터
   const remainingKcal = 1230;
   const totalKcal = 1800;
-  const percent = remainingKcal / totalKcal;
+  const consumedKcal = totalKcal - remainingKcal;
+  const percent = consumedKcal / totalKcal;
+  
+  // 영양소 데이터
   const nutrients = [
     { label: "탄수화물", value: "120g", percent: 0.8 },
-    { label: "단백질", value: "120g", percent: 0.7 },
-    { label: "지방", value: "120g", percent: 0.6 },
-    { label: "나트륨", value: "120g", percent: 0.5 },
-    { label: "칼륨", value: "120g", percent: 0.9 },
-    { label: "인", value: "120g", percent: 0.4 },
+    { label: "단백질", value: "80g", percent: 0.7 },
+    { label: "지방", value: "50g", percent: 0.6 },
+    { label: "나트륨", value: "2.3g", percent: 0.5 },
+    { label: "칼륨", value: "3.5g", percent: 0.9 },
+    { label: "인", value: "1.2g", percent: 0.4 },
   ];
-  const insets = useSafeAreaInsets();
-  // 물 섭취 상태
-  const [waterAmount, setWaterAmount] = useState(0.25); // 현재 섭취량 (L)
-  const waterGoal = 2; // 목표 섭취량 (L)
-  const waterPercent = Math.min(waterAmount / waterGoal, 1);
+
+  // 더 큰 크기로 조정
+  const progressSize = isTablet ? 280 : 240;
+
+  // 칼로리 상태에 따른 메시지
+  const getCalorieMessage = () => {
+    const remainingPercent = remainingKcal / totalKcal;
+    if (remainingPercent >= 0.5) return "🍰 초코케이크 하나 더 가능해요!";
+    if (remainingPercent >= 0.3) return "🍪 간식 한 가지 더 괜찮아요!";
+    if (remainingPercent >= 0.15) return "🍎 과일 한 개 정도 추가 가능!";
+    return "⚠️ 칼로리 거의 소진!";
+  };
 
   return (
     <LinearGradient
       colors={["#C6FCD9", "#F9F7B7"]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
-      style={{ flex: 1, position: 'relative' }}
+      style={{ flex: 1 }}
     >
       <Stack.Screen options={{ title: "홈", headerShown: false }} />
-      {/* 상단 헤더 */}
-      <View className="pt-12 pb-4" style={{ backgroundColor: 'transparent' }}>
-        <Text className="text-center text-lg font-bold">홈</Text>
-      </View>
-      {/* 칼로리/그래프 영역 */}
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', backgroundColor: 'transparent' }}>
-        <View className="items-center pt-8 pb-6">
-          <Text className="text-lg font-bold mb-1">남은 칼로리</Text>
-          <Text className="text-xs text-gray-500 mb-4">초코케이크 하나 더 섭취 가능!</Text>
-          {/* 원형 프로그레스 */}
-          <View className="mb-2">
-            <Svg width={180} height={180}>
-              <Circle cx={90} cy={90} r={85} stroke="#F3F4F6" strokeWidth={10} fill="#fff" />
+      
+      <ScrollView
+        contentContainerStyle={{
+          paddingHorizontal: isWeb ? 24 : 20,
+          paddingBottom: insets.bottom + 40,
+          ...(isWeb && { 
+            maxWidth: maxContentWidth, 
+            alignSelf: 'center',
+            width: '100%'
+          })
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* 상단 헤더 */}
+        <View 
+          className="pb-8" 
+          style={{ 
+            paddingTop: insets.top + 16,
+            backgroundColor: 'transparent' 
+          }}
+        >
+          <Text className={`text-center font-bold ${isTablet ? 'text-4xl' : 'text-3xl'}`} style={{ color: '#2D5016' }}>
+            홈
+          </Text>
+        </View>
+
+        {/* 칼로리 섹션 - 메인 카드 (더 크게) */}
+        <View 
+          className="rounded-3xl mb-6"
+          style={{
+            padding: isTablet ? 32 : 24,
+            backgroundColor: 'rgba(255, 255, 255, 0.85)',
+            ...(Platform.OS !== 'web' && {
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 12,
+              elevation: 5,
+            }),
+            ...(isWeb && {
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+            }),
+          }}
+        >
+          <View className="items-center mb-8">
+            <Text className={`font-bold mb-3 ${isTablet ? 'text-3xl' : 'text-2xl'}`} style={{ color: '#1F2937' }}>
+              오늘의 칼로리
+            </Text>
+            <Text className={`${isTablet ? 'text-lg' : 'text-base'}`} style={{ color: '#6B7280' }}>
+              {getCalorieMessage()}
+            </Text>
+          </View>
+          
+          {/* 원형 프로그레스 (더 크게) */}
+          <View className="items-center justify-center mb-8" style={{ position: 'relative', height: progressSize }}>
+            <Svg width={progressSize} height={progressSize} style={{ position: 'absolute' }}>
+              <Circle 
+                cx={progressSize / 2} 
+                cy={progressSize / 2} 
+                r={(progressSize - 28) / 2} 
+                stroke="#E5E7EB" 
+                strokeWidth={18} 
+                fill="#fff" 
+              />
               <Circle
-                cx={90}
-                cy={90}
-                r={85}
+                cx={progressSize / 2}
+                cy={progressSize / 2}
+                r={(progressSize - 28) / 2}
                 stroke="#5ac845"
-                strokeWidth={10}
+                strokeWidth={18}
                 fill="none"
-                strokeDasharray={2 * Math.PI * 85}
-                strokeDashoffset={2 * Math.PI * 85 * (percent - 1)}
+                strokeDasharray={2 * Math.PI * ((progressSize - 28) / 2)}
+                strokeDashoffset={2 * Math.PI * ((progressSize - 28) / 2) * (1 - percent)}
                 strokeLinecap="round"
                 rotation="-90"
-                origin="90,90"
+                origin={`${progressSize / 2},${progressSize / 2}`}
               />
-              <SvgText
-                x="90"
-                y="105"
-                textAnchor="middle"
-                fontSize="40"
-                fontWeight="bold"
-                fill="#222"
-              >
-                {remainingKcal.toLocaleString()}
-              </SvgText>
-              <SvgText
-                x="90"
-                y="130"
-                textAnchor="middle"
-                fontSize="18"
-                fill="#aaa"
-              >
-                kcal
-              </SvgText>
             </Svg>
+            <View className="items-center justify-center" style={{ position: 'absolute' }}>
+              <Text className={`font-bold ${isTablet ? 'text-7xl' : 'text-6xl'}`} style={{ color: '#059669' }}>
+                {remainingKcal.toLocaleString()}
+              </Text>
+              <Text className={`${isTablet ? 'text-2xl' : 'text-xl'}`} style={{ color: '#6B7280', marginTop: 8 }}>
+                kcal 남음
+              </Text>
+            </View>
+          </View>
+
+          {/* 칼로리 상세 정보 (더 크게) */}
+          <View 
+            className="rounded-2xl p-5"
+            style={{ backgroundColor: '#F0FDF4' }}
+          >
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className={`${isTablet ? 'text-lg' : 'text-base'}`} style={{ color: '#6B7280' }}>
+                섭취한 칼로리
+              </Text>
+              <Text className={`font-bold ${isTablet ? 'text-xl' : 'text-lg'}`} style={{ color: '#059669' }}>
+                {consumedKcal.toLocaleString()} kcal
+              </Text>
+            </View>
+            <View className="flex-row justify-between items-center">
+              <Text className={`${isTablet ? 'text-lg' : 'text-base'}`} style={{ color: '#6B7280' }}>
+                목표 칼로리
+              </Text>
+              <Text className={`font-bold ${isTablet ? 'text-xl' : 'text-lg'}`} style={{ color: '#1F2937' }}>
+                {totalKcal.toLocaleString()} kcal
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
-      {/* 중앙 물컵 + 섭취량/목표치 */}
-      <View style={{ alignItems: 'center', marginTop: 32, marginBottom: 220 }}>
-        {/* 목표치 텍스트 (컵 위) */}
-        <Text style={{ fontWeight: 'bold', fontSize: 24, textAlign: 'center', marginBottom: 12 }}>{waterGoal}L</Text>
-        {/* 물컵 SVG */}
-        <Svg width={120} height={120} style={{ marginBottom: 12 }}>
-          {/* 컵 그림자 */}
-          <Ellipse cx={60} cy={114} rx={33} ry={10} fill="#D1FAE5" />
-          {/* 컵 손잡이 (오른쪽) */}
-          <Path d="M92 55 Q115 75 92 95" stroke="#6EE7B7" strokeWidth={6} fill="none" />
-          {/* 컵 외곽 (민트) */}
-          <Rect x={30} y={30} width={60} height={75} rx={18} fill="#ECFDF5" stroke="#6EE7B7" strokeWidth={4} />
-          {/* 물 채움 (연한 민트) */}
-          <Rect x={30} y={105 - 75 * waterPercent} width={60} height={75 * waterPercent} rx={18 * waterPercent} fill="#A7F3D0" />
-        </Svg>
-        {/* 현재 섭취량 텍스트 (컵 아래) */}
-        <Text style={{ fontWeight: 'bold', fontSize: 24, textAlign: 'center', marginTop: 8 }}>{waterAmount}L</Text>
-      </View>
-      {/* 하단 바텀시트 오픈 버튼 - 바텀탭 위에 고정 (SafeArea 반영) */}
-      <View style={{ position: 'absolute', left: 0, right: 0, bottom: insets.bottom + 52, alignItems: 'center', zIndex: 10 }} pointerEvents="box-none">
-        <TouchableOpacity
-          onPress={() => setModalVisible(true)}
-          activeOpacity={0.85}
-          style={{ borderRadius: 999, overflow: 'hidden' }}
+
+        {/* 영양소 섹션 (더 크게) */}
+        <View 
+          className="rounded-3xl mb-6"
+          style={{
+            padding: isTablet ? 32 : 24,
+            backgroundColor: 'rgba(255, 255, 255, 0.85)',
+            ...(Platform.OS !== 'web' && {
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.15,
+              shadowRadius: 12,
+              elevation: 5,
+            }),
+            ...(isWeb && {
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+            }),
+          }}
         >
-          <LinearGradient
-            colors={['#6EE7B7', '#A7F3D0']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{ paddingHorizontal: 32, paddingVertical: 16, borderRadius: 999, alignItems: 'center', justifyContent: 'center' }}
+          <View className="flex-row items-center justify-between mb-6">
+            <Text className={`font-bold ${isTablet ? 'text-3xl' : 'text-2xl'}`} style={{ color: '#1F2937' }}>
+              영양소 현황
+            </Text>
+            <TouchableOpacity
+              onPress={() => setModalVisible(true)}
+              className="px-5 py-3 rounded-full"
+              style={{ backgroundColor: '#5ac845' }}
+            >
+              <Text className={`font-semibold ${isTablet ? 'text-lg' : 'text-base'}`} style={{ color: '#fff' }}>
+                상세 보기
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* 영양소 그리드 */}
+          <View 
+            className="flex-row flex-wrap"
+            style={{ gap: 16 }}
           >
-            <Text className="font-bold text-base" style={{ color: '#fff' }}>+</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-      {/* 바텀시트(모달) */}
+            {nutrients.map((nutrient, index) => (
+              <NutrientCard
+                key={nutrient.label}
+                label={nutrient.label}
+                value={nutrient.value}
+                percent={nutrient.percent}
+                index={index}
+              />
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* 영양소 상세 모달 */}
       <Modal
         visible={modalVisible}
         animationType="slide"
         transparent
         onRequestClose={() => setModalVisible(false)}
       >
-        <Pressable className="flex-1 bg-black/30" onPress={() => setModalVisible(false)}>
-          <View className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 shadow-2xl">
-            <View className="w-12 h-1.5 bg-gray-200 rounded-full self-center mb-4" />
-            <Text className="text-center text-lg font-bold mb-6">영양소 정보</Text>
-            <View className="flex-row justify-between mb-2">
-              {nutrients.slice(0, 3).map((n) => (
-                <NutrientBar key={n.label} label={n.label} value={n.value} percent={n.percent} />
-              ))}
-            </View>
-            <View className="flex-row justify-between">
-              {nutrients.slice(3, 6).map((n) => (
-                <NutrientBar key={n.label} label={n.label} value={n.value} percent={n.percent} />
-              ))}
-            </View>
+        <Pressable 
+          className="flex-1 bg-black/40" 
+          onPress={() => setModalVisible(false)}
+        >
+          <View 
+            className="bg-white rounded-t-3xl p-6"
+            style={{
+              maxHeight: '85%',
+              ...(isWeb && {
+                maxWidth: 900,
+                alignSelf: 'center',
+                width: '100%',
+                borderRadius: 24,
+                marginBottom: 24,
+              }),
+            }}
+          >
+            <View className="w-12 h-1.5 bg-gray-300 rounded-full self-center mb-6" />
+            
+            <Text className={`text-center font-bold mb-6 ${isTablet ? 'text-2xl' : 'text-xl'}`} style={{ color: '#1F2937' }}>
+              영양소 상세 정보
+            </Text>
+            
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View className="flex-row flex-wrap" style={{ gap: 12 }}>
+                {nutrients.map((nutrient, index) => (
+                  <View 
+                    key={nutrient.label}
+                    className="rounded-2xl p-5"
+                    style={{ 
+                      width: isTablet ? '48%' : '100%',
+                      backgroundColor: index % 2 === 0 ? '#F9FAFB' : '#FFFFFF',
+                    }}
+                  >
+                    <View className="flex-row items-center justify-between mb-3">
+                      <Text className={`font-bold ${isTablet ? 'text-lg' : 'text-base'}`} style={{ color: '#1F2937' }}>
+                        {nutrient.label}
+                      </Text>
+                      <Text className={`font-bold ${isTablet ? 'text-lg' : 'text-base'}`} style={{ color: '#059669' }}>
+                        {nutrient.value}
+                      </Text>
+                    </View>
+                    <View 
+                      className="rounded-full overflow-hidden"
+                      style={{ 
+                        height: 10, 
+                        backgroundColor: '#E5E7EB',
+                      }}
+                    >
+                      <View 
+                        className="h-full rounded-full"
+                        style={{ 
+                          width: `${Math.min(nutrient.percent * 100, 100)}%`,
+                          backgroundColor: '#5ac845',
+                        }}
+                      />
+                    </View>
+                    <Text className={`mt-2 ${isTablet ? 'text-sm' : 'text-xs'}`} style={{ color: '#6B7280' }}>
+                      {Math.round(nutrient.percent * 100)}% 달성
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
+            
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              className="mt-6 rounded-2xl p-4"
+              style={{ backgroundColor: '#5ac845' }}
+            >
+              <Text className={`text-center font-bold ${isTablet ? 'text-base' : 'text-sm'}`} style={{ color: '#fff' }}>
+                닫기
+              </Text>
+            </TouchableOpacity>
           </View>
         </Pressable>
       </Modal>
